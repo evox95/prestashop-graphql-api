@@ -1,0 +1,16 @@
+{
+    "name": "prestashop/front-api",
+    "description": "",
+    "type": "module",
+    "autoload": {
+        "psr-4": {
+            "PrestaShop\\Api\\": "src/"
+        }
+    },
+    "require": {
+        "php": "^7.4 || ^8",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "webonyx/graphql-php": "^14.11"
+    }
+}
