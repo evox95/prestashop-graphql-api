@@ -1,19 +1,22 @@
 <?php declare(strict_types=1);
 
-namespace PrestaShop\Api;
+namespace PrestaShop\API\GraphQL;
+
+use Context;
 
 /**
  * Instance available in all GraphQL resolvers as 3rd argument.
  */
 class AppContext
 {
-    public string $rootUrl;
 
     /**
-     * @var \Context
+     * @var Context
      */
-    public \Context $shopContext;
+    public Context $shopContext;
 
-    /** @var array<string, mixed> */
+    /**
+     * @var array<string, mixed>
+     */
     public array $request;
 }

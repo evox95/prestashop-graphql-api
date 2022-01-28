@@ -1,16 +1,29 @@
 {
-    "name": "prestashop/front-api",
-    "description": "",
-    "type": "module",
+    "name": "evox95/prestashop-graphql-api",
+    "description": "Lightweight implementation of the GraphQL API for PrestaShop front-office.",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "prestashop",
+        "front",
+        "graphql",
+        "API"
+    ],
+    "homepage": "https://github.com/evox95/prestashop-graphql-api",
+    "authors": [
+        {
+            "name": "Mateusz Bartocha",
+            "email": "contact@bestcoding.net",
+            "homepage": "https://bestcoding.net"
+        }
+    ],
     "autoload": {
         "psr-4": {
-            "PrestaShop\\Api\\": "src/"
+            "PrestaShop\\API\\GraphQL\\": "src/"
         }
     },
     "require": {
-        "php": "^7.4 || ^8",
-        "ext-json": "*",
-        "ext-mbstring": "*",
+        "php": ">=7.4",
         "webonyx/graphql-php": "^14.11"
     }
 }

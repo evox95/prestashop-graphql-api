@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PrestaShop\Api\Type;
+namespace PrestaShop\API\GraphQL\Type\Query\Catalog;
 
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
@@ -13,7 +13,7 @@ class CategoryType extends ObjectType
         parent::__construct([
             'name' => 'Category',
             'fields' => [
-                'id_category' => Type::id(),
+                'id' => Type::id(),
                 'name' => Type::string(),
                 'id_parent' => Type::id(),
             ],

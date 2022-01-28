@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PrestaShop\Api\Type;
+namespace PrestaShop\API\GraphQL\Type\Query\Sell\Cart;
 
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;

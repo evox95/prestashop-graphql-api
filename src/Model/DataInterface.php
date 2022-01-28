@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PrestaShop\Api\Model;
+namespace PrestaShop\API\GraphQL\Model;
 
 interface DataInterface
 {

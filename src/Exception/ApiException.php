@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace PrestaShop\Api\Exception;
+namespace PrestaShop\API\GraphQL\Exception;
 
 use PrestaShop\PrestaShop\Adapter\Entity\PrestaShopException;
 

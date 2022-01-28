@@ -1,10 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace PrestaShop\Api;
+namespace PrestaShop\API\GraphQL;
 
 use Exception;
 use GraphQL\Type\Definition\Type;
-use PrestaShop\Api\Type\ProductType;
 use Closure;
 use function count;
 use function explode;
@@ -19,11 +18,6 @@ final class Types
 
     /** @var array<string, Type> */
     private static array $types = [];
-
-//    public static function product(): callable
-//    {
-//        return self::get(ProductType::class);
-//    }
 
     /**
      * @param class-string<Type> $classname
