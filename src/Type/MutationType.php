@@ -1,34 +1,26 @@
-<?php declare(strict_types=1);
+<?php
+/*
+ * This file is part of the evox95/prestashop-graphql-api package.
+ *
+ * (c) Mateusz Bartocha <contact@bestcoding.net>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
 
 namespace PrestaShop\API\GraphQL\Type;
 
-use PrestaShop\API\GraphQL\Type\Mutation\AuthType;
-use PrestaShop\API\GraphQL\Type\Mutation\CartMutation;
-use PrestaShop\API\GraphQL\Types;
-use GraphQL\Type\Definition\ObjectType;
-use GraphQL\Type\Definition\ResolveInfo;
+use PrestaShop\API\GraphQL\Model\ObjectType;
 
 class MutationType extends ObjectType
 {
-    public function __construct()
+    protected static function getSchema(): array
     {
-        parent::__construct([
+        return [
             'name' => 'Mutation',
-            'fields' => [
-                'auth' => [
-                    'type' => Types::get(AuthType::class),
-                    'description' => 'Auth',
-                    'resolve' => Types::get(AuthType::class),
-                ],
-                'cart' => [
-                    'type' => Types::get(CartMutation::class),
-                    'description' => 'Cart',
-                    'resolve' => Types::get(CartMutation::class),
-                ],
-            ],
-            'resolveField' => function ($rootValue, $args, $context, ResolveInfo $info) {
-                return $this->{$info->fieldName}($rootValue, $args, $context, $info);
-            },
-        ]);
+            'fields' => self::getFieldsByClassNamespace('PrestaShop\API\GraphQL\Type\Mutation'),
+        ];
     }
 }

@@ -1,13 +1,13 @@
 {
     "name": "evox95/prestashop-graphql-api",
     "description": "Lightweight implementation of the GraphQL API for PrestaShop front-office.",
-    "license": "MIT",
+    "license": "OSL-3.0",
     "type": "library",
     "keywords": [
         "prestashop",
         "front",
         "graphql",
-        "API"
+        "api"
     ],
     "homepage": "https://github.com/evox95/prestashop-graphql-api",
     "authors": [
@@ -17,13 +17,30 @@
             "homepage": "https://bestcoding.net"
         }
     ],
+    "scripts": {
+        "cs-fix": "vendor/bin/php-cs-fixer --config='.php-cs-fixer.php' fix",
+        "autoindex": "vendor/bin/autoindex --exclude=vendor",
+        "header-stamp": "vendor/bin/header-stamp --license=.header-stamp --exclude=vendor",
+        "predeploy": [
+            "@autoindex",
+            "@header-stamp",
+            "@cs-fix"
+        ]
+    },
     "autoload": {
         "psr-4": {
-            "PrestaShop\\API\\GraphQL\\": "src/"
+            "PrestaShop\\API\\GraphQL\\": [
+                "../../override/modules/api_graphql/src/",
+                "src/"
+            ]
         }
     },
     "require": {
         "php": ">=7.4",
-        "webonyx/graphql-php": "^14.11"
+        "webonyx/graphql-php": "^14.11",
+        "haydenpierce/class-finder": "^0.4.3"
+    },
+    "require-dev": {
+        "prestashop/php-dev-tools": "^v4.2.0"
     }
 }

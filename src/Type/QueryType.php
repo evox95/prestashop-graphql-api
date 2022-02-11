@@ -1,17 +1,21 @@
-<?php declare(strict_types=1);
+<?php
+/*
+ * This file is part of the evox95/prestashop-graphql-api package.
+ *
+ * (c) Mateusz Bartocha <contact@bestcoding.net>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
 
 namespace PrestaShop\API\GraphQL\Type;
 
 use Customer;
-use PrestaShop\API\GraphQL\AppContext;
-use PrestaShop\API\GraphQL\Model\ObjectType;
-use PrestaShop\API\GraphQL\Type\Query\CatalogType;
-use PrestaShop\API\GraphQL\Type\Query\CustomerType;
-use PrestaShop\API\GraphQL\Type\Query\DesignType;
-use PrestaShop\API\GraphQL\Type\Query\SellType;
-use PrestaShop\API\GraphQL\Types;
 use GraphQL\Type\Definition\ResolveInfo;
-use GraphQL\Type\Definition\Type;
+use PrestaShop\API\GraphQL\ApiContext;
+use PrestaShop\API\GraphQL\Model\ObjectType;
 
 class QueryType extends ObjectType
 {
@@ -19,37 +23,20 @@ class QueryType extends ObjectType
     {
         parent::__construct([
             'name' => 'Query',
-            'fields' => [
-                'hello' => Type::string(),
-                'customer' => [
-                    'type' => Types::get(CustomerType::class),
-                    'description' => 'Get customer',
-                    'resolve' => fn(...$args) => $this->getCustomer(...$args),
-                ],
-                'catalog' => [
-                    'type' => Types::get(CatalogType::class),
-                    'description' => 'Catalog',
-                ],
-                'sell' => [
-                    'type' => Types::get(SellType::class),
-                    'description' => 'Sell',
-                ],
-                'design' => [
-                    'type' => Types::get(DesignType::class),
-                    'description' => 'Design',
-                ],
-            ],
+            'fields' => self::getFieldsByClassNamespace('PrestaShop\API\GraphQL\Type\Query'),
         ]);
     }
 
-    public function getCustomer($objectValue, $args, AppContext $context, ResolveInfo $info): Customer
+    protected static function getSchema(): array
+    {
+        return [
+            'name' => 'Query',
+            'fields' => self::getFieldsByClassNamespace('PrestaShop\API\GraphQL\Type\Query'),
+        ];
+    }
+
+    protected function getCustomer($objectValue, array $args, ApiContext $context, ResolveInfo $info): Customer
     {
         return $context->shopContext->customer;
     }
-
-    public function hello(): string
-    {
-        return 'Your PrestaShop Front API endpoint is ready! Use a GraphQL client to explore the schema.';
-    }
-
 }

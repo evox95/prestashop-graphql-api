@@ -1,18 +1,28 @@
-<?php declare(strict_types=1);
+<?php
+/*
+ * This file is part of the evox95/prestashop-graphql-api package.
+ *
+ * (c) Mateusz Bartocha <contact@bestcoding.net>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
 
 namespace PrestaShop\API\GraphQL\Type\Query\Catalog;
 
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
-use PrestaShop\API\GraphQL\AppContext;
+use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
+use Product;
 
 class ProductType extends ObjectType
 {
-
-    public function __construct()
+    protected static function getSchema(): array
     {
-        parent::__construct([
+        return [
             'name' => 'Product',
             'fields' => [
                 'id' => Type::id(),
@@ -125,7 +135,7 @@ class ProductType extends ObjectType
                     'description' => 'Price without tax',
                 ],
                 'price_wt' => [
-                    'type' => Type::float(),
+                    'type' => Type::string(),
                     'description' => 'Price with tax',
                 ],
                 'reduction' => [
@@ -168,13 +178,32 @@ class ProductType extends ObjectType
                     'type' => Type::string(),
                     'description' => '',
                 ],
+                'cover_url' => [
+                    'type' => Type::string(),
+                    'description' => '',
+                ],
             ],
-        ]);
+        ];
     }
 
-    public function getName(\Product $rootValue, array $args, AppContext $context, ResolveInfo $info): string {
-//        var_dump($rootValue, $args);
-//        die();
-        return $rootValue->name . 'aa';
+    protected function getCoverUrl(Product $rootValue, array $args, ApiContext $context, ResolveInfo $info): string
+    {
+        return $context->shopContext->link->getImageLink('none', $rootValue->getCoverWs());
+    }
+
+    protected function getPriceWithoutReduction(
+        Product $rootValue, array $args, ApiContext $context, ResolveInfo $info
+    ): float {
+        return (float) $rootValue->getPriceWithoutReduct(
+            false, $args['id_product_attribute'] ?? 0
+        );
+    }
+
+    protected function getPrice(
+        Product $rootValue, array $args, ApiContext $context, ResolveInfo $info
+    ): float {
+        return (float) $rootValue->getPrice(
+            true, $args['id_product_attribute'] ?? 0
+        );
     }
 }

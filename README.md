@@ -1,4 +1,4 @@
-PrestaShop Front GraphQL API
+PrestaShop Front GraphQL API (beta!)
 ---
 
 Lightweight implementation of the GraphQL API for PrestaShop front-office.

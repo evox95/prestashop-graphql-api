@@ -10,10 +10,22 @@
 
 declare(strict_types=1);
 
-namespace PrestaShop\API\GraphQL\Exception;
+namespace PrestaShop\API\GraphQL;
 
-use PrestaShopException;
+use Context;
 
-class ApiException extends PrestaShopException
+/**
+ * Instance available in all GraphQL resolvers as 3rd argument.
+ */
+class ApiContext
 {
+    /**
+     * @var Context
+     */
+    public Context $shopContext;
+
+    /**
+     * @var array<string, mixed>
+     */
+    public array $request;
 }

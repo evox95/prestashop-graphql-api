@@ -12,8 +12,17 @@ declare(strict_types=1);
 
 namespace PrestaShop\API\GraphQL\Exception;
 
-use PrestaShopException;
+use GraphQL\Error\ClientAware;
 
-class ApiException extends PrestaShopException
+class ApiSafeException extends ApiException implements ClientAware
 {
+    public function isClientSafe(): bool
+    {
+        return true;
+    }
+
+    public function getCategory(): string
+    {
+        return 'request';
+    }
 }

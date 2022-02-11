@@ -10,53 +10,45 @@
 
 declare(strict_types=1);
 
-namespace PrestaShop\API\GraphQL\Type\Query\Design;
+namespace PrestaShop\API\GraphQL\Type\Query\International;
 
 use GraphQL\Type\Definition\Type;
 use PrestaShop\API\GraphQL\Model\ObjectType;
 
-class PageType extends ObjectType
+class LanguageType extends ObjectType
 {
     protected static function getSchema(): array
     {
         return [
-            'name' => 'Page',
+            'name' => 'Language',
             'fields' => [
                 'id' => Type::id(),
-                'indexation' => [
+                'name' => [
+                    'type' => Type::string(),
+                    'description' => '',
+                ],
+                'iso_code' => [
+                    'type' => Type::string(),
+                    'description' => '',
+                ],
+                'locale' => [
+                    'type' => Type::string(),
+                    'description' => '',
+                ],
+                'language_code' => [
+                    'type' => Type::string(),
+                    'description' => '',
+                ],
+                'date_format_lite' => [
+                    'type' => Type::string(),
+                    'description' => '',
+                ],
+                'date_format_full' => [
+                    'type' => Type::string(),
+                    'description' => '',
+                ],
+                'is_rtl' => [
                     'type' => Type::boolean(),
-                    'description' => '',
-                ],
-                'position' => [
-                    'type' => Type::int(),
-                    'description' => '',
-                ],
-                'id_cms_category' => [
-                    'type' => Type::id(),
-                    'description' => '',
-                ],
-                'content' => [
-                    'type' => Type::string(),
-                    'description' => '',
-                ],
-                'head_seo_title' => [
-                    'type' => Type::string(),
-                    'description' => '',
-                ],
-                'meta_title' => [
-                    'type' => Type::string(),
-                    'description' => '',
-                ],
-                'meta_description' => [
-                    'type' => Type::string(),
-                    'description' => '',
-                ],
-                'meta_keywords' => [
-                    'type' => Type::string(),
-                    'description' => '',
-                ],
-                'link_rewrite' => [
-                    'type' => Type::string(),
                     'description' => '',
                 ],
             ],

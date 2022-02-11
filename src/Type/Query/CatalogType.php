@@ -1,27 +1,41 @@
-<?php declare(strict_types=1);
+<?php
+/*
+ * This file is part of the evox95/prestashop-graphql-api package.
+ *
+ * (c) Mateusz Bartocha <contact@bestcoding.net>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
 
 namespace PrestaShop\API\GraphQL\Type\Query;
 
-use Db;
-use DbQuery;
+use Exception;
 use Generator;
 use GraphQL\Type\Definition\ListOfType;
+use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;
-use PrestaShop\API\GraphQL\AppContext;
-use Category;
-use PrestaShopDatabaseException;
-use Product;
+use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
 use PrestaShop\API\GraphQL\Type\Query\Catalog\CategoryType;
 use PrestaShop\API\GraphQL\Type\Query\Catalog\ProductType;
 use PrestaShop\API\GraphQL\Types;
-use GraphQL\Type\Definition\NonNull;
+use PrestaShop\PrestaShop\Adapter\Entity\Category;
+use PrestaShop\PrestaShop\Adapter\Entity\Db;
+use PrestaShop\PrestaShop\Adapter\Entity\DbQuery;
+use PrestaShop\PrestaShop\Adapter\Entity\Product;
+use PrestaShopDatabaseException;
 
 class CatalogType extends ObjectType
 {
-    public function __construct()
+    /**
+     * @throws Exception
+     */
+    protected static function getSchema(): array
     {
-        parent::__construct([
+        return [
             'name' => 'Catalog',
             'fields' => [
                 'product' => [
@@ -83,55 +97,62 @@ class CatalogType extends ObjectType
                     ],
                 ],
             ],
-        ]);
+        ];
     }
 
     /**
      * @param null $rootValue
-     * @param array{id: string} $args
-     * @param AppContext $context
+     * @param array{id: int} $args
+     * @param ApiContext $context
      * @param ResolveInfo $info
-     * @return Product|null
+     *
+     * @return Product
      */
-    public function getProduct($rootValue, array $args, AppContext $context, ResolveInfo $info): ?Product
+    public function getProduct($rootValue, array $args, ApiContext $context, ResolveInfo $info): Product
     {
-        return new Product((int)$args['id'], true, $context->shopContext->language->id);
+        $object = new Product((int) $args['id'], true, $context->shopContext->language->id);
+
+        return $object->active ? $object : new Product();
     }
 
     /**
      * @param null $rootValue
-     * @param array{id: string} $args
-     * @param AppContext $context
+     * @param array{id: int} $args
+     * @param ApiContext $context
      * @param ResolveInfo $info
-     * @return Category|null
+     *
+     * @return Category
      */
-    public function getCategory($rootValue, array $args, AppContext $context, ResolveInfo $info): ?Category
+    public function getCategory($rootValue, array $args, ApiContext $context, ResolveInfo $info): Category
     {
-        return new Category((int)$args['id'], $context->shopContext->language->id);
+        $object = new Category((int) $args['id'], $context->shopContext->language->id);
+
+        return $object->active ? $object : new Category();
     }
 
     /**
      * @param null $rootValue
-     * @param array{limit: int, after?: string} $args
-     * @param AppContext $context
+     * @param array{limit: int, offset: int, id_category_default?: int, id_category?: int} $args
+     * @param ApiContext $context
      * @param ResolveInfo $info
+     *
      * @return Generator
+     *
      * @throws PrestaShopDatabaseException
      */
-    public function getProducts($rootValue, array $args, AppContext $context, ResolveInfo $info): Generator
+    public function getProducts($rootValue, array $args, ApiContext $context, ResolveInfo $info): Generator
     {
         $dbQuery = new DbQuery();
         $dbQuery->select('a.id_product');
         $dbQuery->from(Product::$definition['table'], 'a');
+        $dbQuery->where('a.active = 1');
 
-        $filter = $args['id_category_default'] ?? 0;
-        if ($filter) {
-            $dbQuery->where('a.id_category_default = ' . (int)$filter);
+        if ($filter = $args['id_category_default'] ?? 0) {
+            $dbQuery->where('a.id_category_default = ' . (int) $filter);
         }
-        $filter = $args['id_category'] ?? 0;
-        if ($filter) {
+        if ($filter = $args['id_category'] ?? 0) {
             $dbQuery->innerJoin('category_product', 'cp', 'a.id_product = cp.id_product');
-            $dbQuery->where('cp.id_category = ' . (int)$filter);
+            $dbQuery->where('cp.id_category = ' . (int) $filter);
         }
         $dbQuery->limit($args['limit'], $args['offset']);
 
@@ -143,21 +164,23 @@ class CatalogType extends ObjectType
 
     /**
      * @param null $rootValue
-     * @param array{limit: int, after?: string} $args
-     * @param AppContext $context
+     * @param array{limit: int, offset: int, id_parent?: int} $args
+     * @param ApiContext $context
      * @param ResolveInfo $info
+     *
      * @return Generator
+     *
      * @throws PrestaShopDatabaseException
      */
-    public function getCategories($rootValue, array $args, AppContext $context, ResolveInfo $info): Generator
+    public function getCategories($rootValue, array $args, ApiContext $context, ResolveInfo $info): Generator
     {
         $dbQuery = new DbQuery();
         $dbQuery->select('a.id_category');
         $dbQuery->from(Category::$definition['table'], 'a');
+        $dbQuery->where('a.active = 1');
 
-        $filter = $args['id_parent'] ?? 0;
-        if ($filter) {
-            $dbQuery->where('a.id_parent = ' . (int)$filter);
+        if ($filter = $args['id_parent'] ?? 0) {
+            $dbQuery->where('a.id_parent = ' . (int) $filter);
         }
         $dbQuery->limit($args['limit'], $args['offset']);
 

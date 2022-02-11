@@ -1,11 +1,20 @@
-<?php declare(strict_types=1);
+<?php
+/*
+ * This file is part of the evox95/prestashop-graphql-api package.
+ *
+ * (c) Mateusz Bartocha <contact@bestcoding.net>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
 
 namespace PrestaShop\API\GraphQL\Type\Query\Sell;
 
 use GraphQL\Type\Definition\ListOfType;
-
 use GraphQL\Type\Definition\ResolveInfo;
-use PrestaShop\API\GraphQL\AppContext;
+use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
 use PrestaShop\API\GraphQL\Type\Query\Sell\Cart\CartProductType;
 use PrestaShop\API\GraphQL\Type\Query\Sell\Cart\CartRuleType;
@@ -13,10 +22,9 @@ use PrestaShop\API\GraphQL\Types;
 
 class CartType extends ObjectType
 {
-
-    public function __construct()
+    protected static function getSchema(): array
     {
-        parent::__construct([
+        return [
             'name' => 'Cart',
             'fields' => [
                 'products' => new ListOfType(Types::get(CartProductType::class)),
@@ -25,32 +33,31 @@ class CartType extends ObjectType
                 'total_shipping_cost' => Types::float(),
                 'total_weight' => Types::float(),
             ],
-        ]);
+        ];
     }
 
-    protected function getTotalWeight($objectValue, $args, AppContext $context, ResolveInfo $info): float
+    protected function getTotalWeight($objectValue, $args, ApiContext $context, ResolveInfo $info): float
     {
         return $context->shopContext->cart->getTotalWeight();
     }
 
-    protected function getTotalShippingCost($objectValue, $args, AppContext $context, ResolveInfo $info): float
+    protected function getTotalShippingCost($objectValue, $args, ApiContext $context, ResolveInfo $info): float
     {
         return $context->shopContext->cart->getTotalShippingCost();
     }
 
-    protected function getTotal($objectValue, $args, AppContext $context, ResolveInfo $info): float
+    protected function getTotal($objectValue, $args, ApiContext $context, ResolveInfo $info): float
     {
         return $context->shopContext->cart->getCartTotalPrice();
     }
 
-    protected function getProducts($objectValue, $args, AppContext $context, ResolveInfo $info): array
+    protected function getProducts($objectValue, $args, ApiContext $context, ResolveInfo $info): array
     {
         return $context->shopContext->cart->getProducts();
     }
 
-    protected function getCartRules($objectValue, $args, AppContext $context, ResolveInfo $info): array
+    protected function getCartRules($objectValue, $args, ApiContext $context, ResolveInfo $info): array
     {
         return $context->shopContext->cart->getCartRules();
     }
-
 }

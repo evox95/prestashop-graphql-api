@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This file is part of the evox95/prestashop-graphql-api package.
  *
@@ -20,15 +19,15 @@ use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
-use PrestaShop\API\GraphQL\Type\Query\Design\PageType;
+use PrestaShop\API\GraphQL\Type\Query\International\LanguageType;
 use PrestaShop\API\GraphQL\Types;
-use PrestaShop\PrestaShop\Adapter\Entity\CMS;
 use PrestaShop\PrestaShop\Adapter\Entity\Db;
 use PrestaShop\PrestaShop\Adapter\Entity\DbQuery;
+use PrestaShop\PrestaShop\Adapter\Entity\Language;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 
-class DesignType extends ObjectType
+class InternationalType extends ObjectType
 {
     /**
      * @throws Exception
@@ -36,18 +35,18 @@ class DesignType extends ObjectType
     protected static function getSchema(): array
     {
         return [
-            'name' => 'Design',
+            'name' => 'International',
             'fields' => [
-                'page' => [
-                    'type' => Types::get(PageType::class),
-                    'description' => 'Returns page by id',
+                'language' => [
+                    'type' => Types::get(LanguageType::class),
+                    'description' => 'Returns language by id',
                     'args' => [
                         'id' => new NonNull(Types::id()),
                     ],
                 ],
-                'pages' => [
-                    'type' => new ListOfType(Types::get(PageType::class)),
-                    'description' => 'Returns subset of pages',
+                'languages' => [
+                    'type' => new ListOfType(Types::get(LanguageType::class)),
+                    'description' => 'Returns subset of languages',
                     'args' => [
                         'offset' => [
                             'type' => Types::int(),
@@ -71,16 +70,16 @@ class DesignType extends ObjectType
      * @param ApiContext $context
      * @param ResolveInfo $info
      *
-     * @return CMS
+     * @return Language
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    public function getPage($rootValue, array $args, ApiContext $context, ResolveInfo $info): CMS
+    public function getLanguage($rootValue, array $args, ApiContext $context, ResolveInfo $info): Language
     {
-        $object = new CMS((int) $args['id'], $context->shopContext->language->id);
+        $object = new Language((int) $args['id']);
 
-        return $object->active ? $object : new CMS();
+        return $object->active ? $object : new Language();
     }
 
     /**
@@ -89,27 +88,23 @@ class DesignType extends ObjectType
      * @param ApiContext $context
      * @param ResolveInfo $info
      *
-     * @return Generator<CMS>
+     * @return Generator<Language>
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    public function getPages($rootValue, array $args, ApiContext $context, ResolveInfo $info): Generator
+    public function getLanguages($rootValue, array $args, ApiContext $context, ResolveInfo $info): Generator
     {
         $dbQuery = new DbQuery();
-        $dbQuery->select('a.id_cms');
-        $dbQuery->from(CMS::$definition['table'], 'a');
+        $dbQuery->select('a.id_lang');
+        $dbQuery->from(Language::$definition['table'], 'a');
         $dbQuery->where('a.active = 1');
 
-//        $filter = $args['id_category_default'] ?? 0;
-//        if ($filter) {
-//            $dbQuery->where('a.id_category_default = ' . (int)$filter);
-//        }
         $dbQuery->limit($args['limit'], $args['offset']);
 
         $results = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($dbQuery);
         foreach ($results as $result) {
-            yield new CMS($result[CMS::$definition['primary']], true, $context->shopContext->language->id);
+            yield new Language($result[Language::$definition['primary']]);
         }
     }
 }

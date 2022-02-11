@@ -1,22 +1,32 @@
-<?php declare(strict_types=1);
+<?php
+/*
+ * This file is part of the evox95/prestashop-graphql-api package.
+ *
+ * (c) Mateusz Bartocha <contact@bestcoding.net>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
 
 namespace PrestaShop\API\GraphQL;
 
-use Exception;
-use GraphQL\Type\Definition\Type;
 use Closure;
 use function count;
+use Exception;
 use function explode;
-use GraphQL\Type\Definition\ScalarType;
+use GraphQL\Type\Definition\Type;
 use function lcfirst;
 use function method_exists;
 use function preg_replace;
 use function strtolower;
 
-final class Types
+final class Types extends Type
 {
-
-    /** @var array<string, Type> */
+    /**
+     * @var array<string, Type>
+     */
     private static array $types = [];
 
     /**
@@ -26,7 +36,7 @@ final class Types
      */
     public static function get(string $classname): Closure
     {
-        return static fn() => self::byClassName($classname);
+        return static fn () => self::byClassName($classname);
     }
 
     /**
@@ -35,14 +45,22 @@ final class Types
     private static function byClassName(string $classname): Type
     {
         $parts = explode('\\', $classname);
-
         $cacheName = strtolower(preg_replace('~Type$~', '', $parts[count($parts) - 1]));
-
         if (!isset(self::$types[$cacheName])) {
             return self::$types[$cacheName] = new $classname();
         }
 
         return self::$types[$cacheName];
+    }
+
+    private static function loadClassOverride(string &$classname): void
+    {
+        $classname = str_replace(
+            'PrestaShop\\API\\GraphQL\\',
+            'PrestaShop\\API\\GraphQL\\',
+            $classname
+        );
+        require_once __DIR__ . '/../override/modules/api_graphql/src/QueryType.php';
     }
 
     public static function byTypeName(string $shortName): Type
@@ -65,30 +83,4 @@ final class Types
 
         return $type;
     }
-
-    public static function boolean(): ScalarType
-    {
-        return Type::boolean();
-    }
-
-    public static function float(): ScalarType
-    {
-        return Type::float();
-    }
-
-    public static function id(): ScalarType
-    {
-        return Type::id();
-    }
-
-    public static function int(): ScalarType
-    {
-        return Type::int();
-    }
-
-    public static function string(): ScalarType
-    {
-        return Type::string();
-    }
-
 }
