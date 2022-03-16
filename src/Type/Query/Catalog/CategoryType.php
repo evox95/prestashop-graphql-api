@@ -33,6 +33,10 @@ class CategoryType extends ObjectType
             'fields' => [
                 'id' => Type::id(),
                 'name' => Type::string(),
+                'description' => Type::string(),
+                'meta_title' => Type::string(),
+                'meta_keywords' => Type::string(),
+                'meta_description' => Type::string(),
                 'id_parent' => Type::id(),
                 'position' => Type::int(),
             ],

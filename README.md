@@ -12,6 +12,8 @@ Lightweight implementation of the GraphQL API for PrestaShop front-office.
 
 Put files in the `/modules/api_graphql` directory.
 
+You can access GraphQL API by endpoint: `http://127.0.0.1/modules/api_graphql/`
+
 ## Documentation
 
 ...

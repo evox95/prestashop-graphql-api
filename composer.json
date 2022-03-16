@@ -2,7 +2,7 @@
     "name": "evox95/prestashop-graphql-api",
     "description": "Lightweight implementation of the GraphQL API for PrestaShop front-office.",
     "license": "OSL-3.0",
-    "type": "library",
+    "type": "prestashop-module",
     "keywords": [
         "prestashop",
         "front",
