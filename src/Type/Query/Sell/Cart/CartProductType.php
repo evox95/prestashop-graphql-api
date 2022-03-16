@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace PrestaShop\API\GraphQL\Type\Query\Sell\Cart;
 
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
 
 class CartProductType extends ObjectType
@@ -190,7 +192,16 @@ class CartProductType extends ObjectType
                     'type' => Type::string(),
                     'description' => '',
                 ],
+                'cover_url' => [
+                    'type' => Type::string(),
+                    'description' => '',
+                ],
             ],
         ];
+    }
+
+    protected function getCoverUrl(array $rootValue, array $args, ApiContext $context, ResolveInfo $info): string
+    {
+        return $context->shopContext->link->getImageLink('none', $rootValue['id_image']);
     }
 }

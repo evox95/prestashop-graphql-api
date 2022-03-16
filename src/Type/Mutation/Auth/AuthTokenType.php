@@ -10,23 +10,31 @@
 
 declare(strict_types=1);
 
-namespace PrestaShop\API\GraphQL\Type\Query;
+namespace PrestaShop\API\GraphQL\Type\Mutation\Auth;
 
-use GraphQL\Type\Definition\Type;
+use Exception;
 use PrestaShop\API\GraphQL\Model\ObjectType;
+use PrestaShop\API\GraphQL\Types;
 
-class CustomerType extends ObjectType
+class AuthTokenType extends ObjectType
 {
+
+    /**
+     * @throws Exception
+     */
     protected static function getSchema(): array
     {
         return [
-            'name' => 'Customer',
+            'name' => 'AuthToken',
             'fields' => [
-                'id' => Type::id(),
-                'email' => Type::string(),
-                'firstname' => Type::string(),
-                'lastname' => Type::string(),
+                'accessToken' => [
+                    'type' => Types::string(),
+                ],
+                'refreshToken' => [
+                    'type' => Types::string(),
+                ],
             ],
         ];
     }
+
 }

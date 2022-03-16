@@ -53,6 +53,9 @@ class CartType extends ObjectType
 
     protected function getProducts($objectValue, $args, ApiContext $context, ResolveInfo $info): array
     {
+//        var_dump($_COOKIE);
+//        var_dump($context->shopContext->cart->id);
+//        die();
         return $context->shopContext->cart->getProducts();
     }
 

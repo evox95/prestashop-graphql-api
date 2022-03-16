@@ -15,6 +15,9 @@ header('Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
 header('Access-Control-Max-Age: 3600');
 
+//echo json_encode(['data' => $_COOKIE]);
+//die();
+
 require_once __DIR__ . '/../../config/config.inc.php';
 require_once __DIR__ . '/../../init.php';
 require_once __DIR__ . '/vendor/autoload.php';
@@ -38,47 +41,58 @@ if (Configuration::get('PS_TOKEN_ENABLE')) {
     Configuration::updateValue('PS_TOKEN_ENABLE', false);
 }
 
-//try {
+//$fc = new FrontController();
+//$fc->init();
+
+try {
 // See docs on schema options:
 // https://webonyx.github.io/graphql-php/type-system/schema/#configuration-options
-$schema = new Schema([
-    'query' => Types::get(QueryType::class)(),
-    'mutation' => new MutationType(),
-    'typeLoader' => static fn (string $name): Type => Types::byTypeName($name),
-]);
+    $schema = new Schema([
+        'query' => Types::get(QueryType::class)(),
+        'mutation' => new MutationType(),
+        'typeLoader' => static fn(string $name): Type => Types::byTypeName($name),
+    ]);
 
-$apiContext = new ApiContext();
-$apiContext->shopContext = Context::getContext();
-$apiContext->request = $_REQUEST;
+    $apiContext = new ApiContext();
+    $apiContext->shopContext = Context::getContext();
+    $apiContext->request = $_REQUEST;
 
-$validationRules = GraphQL::getStandardValidationRules();
-if (!_PS_MODE_DEV_) {
-    $validationRules = array_merge(
-        $validationRules,
-        [
-            new Rules\QueryComplexity(100),
-            new Rules\DisableIntrospection(),
-            new QueryDepth(10),
-        ]
-    );
-}
+//AuthService::authMiddleware($apiContext);
 
-$config = ServerConfig::create()
-    ->setSchema($schema)
-    ->setContext($apiContext)
-    ->setDebugFlag(
-        _PS_MODE_DEV_
-            ? (DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::RETHROW_UNSAFE_EXCEPTIONS | DebugFlag::INCLUDE_TRACE)
-            : DebugFlag::NONE
-    )
-    ->setValidationRules($validationRules);
+    $validationRules = GraphQL::getStandardValidationRules();
+    if (!_PS_MODE_DEV_) {
+        $validationRules = array_merge(
+            $validationRules,
+            [
+                new Rules\QueryComplexity(100),
+                new Rules\DisableIntrospection(),
+                new QueryDepth(10),
+            ]
+        );
+    }
+
+    $config = ServerConfig::create()
+        ->setSchema($schema)
+        ->setContext($apiContext)
+        ->setDebugFlag(
+            _PS_MODE_DEV_
+                ? (DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::RETHROW_UNSAFE_EXCEPTIONS | DebugFlag::INCLUDE_TRACE)
+                : DebugFlag::NONE
+        )
+        ->setValidationRules($validationRules);
 
 // See docs on server options:
 // https://webonyx.github.io/graphql-php/executing-queries/#server-configuration-options
-$server = new StandardServer($config);
+    $server = new StandardServer($config);
 
-$server->handleRequest();
+    $server->handleRequest();
 
-//} catch (Throwable $error) {
+} catch (Throwable $error) {
+    http_response_code(500);
+    echo json_encode([
+        'erorrs' => [
+            $error->getMessage()
+        ]
+    ]);
 //    StandardServer::send500Error($error);
-//}
+}

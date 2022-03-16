@@ -1,7 +1,7 @@
 {
     "name": "evox95/prestashop-graphql-api",
     "description": "Lightweight implementation of the GraphQL API for PrestaShop front-office.",
-    "license": "MIT",
+    "license": "OSL-3.0",
     "type": "library",
     "keywords": [
         "prestashop",
@@ -38,7 +38,8 @@
     "require": {
         "php": ">=7.4",
         "webonyx/graphql-php": "^14.11",
-        "haydenpierce/class-finder": "^0.4.3"
+        "haydenpierce/class-finder": "^0.4.3",
+        "firebase/php-jwt": "^6.0"
     },
     "require-dev": {
         "prestashop/php-dev-tools": "^v4.2.0"
