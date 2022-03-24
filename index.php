@@ -11,7 +11,7 @@
 declare(strict_types=1);
 
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
 header('Access-Control-Max-Age: 3600');
 
@@ -29,12 +29,13 @@ use GraphQL\Server\StandardServer;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
 use GraphQL\Validator\Rules;
-use GraphQL\Validator\Rules\QueryDepth;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Type\MutationType;
 use PrestaShop\API\GraphQL\Type\QueryType;
 use PrestaShop\API\GraphQL\Types;
 use PrestaShop\PrestaShop\Adapter\Entity\Context;
+use PrestaShop\PrestaShop\Adapter\Entity\Validate;
+use PrestaShop\PrestaShop\Adapter\Entity\Language;
 
 // @todo: Allow enabled front-office token
 if (Configuration::get('PS_TOKEN_ENABLE')) {
@@ -49,13 +50,31 @@ try {
 // https://webonyx.github.io/graphql-php/type-system/schema/#configuration-options
     $schema = new Schema([
         'query' => Types::get(QueryType::class)(),
-        'mutation' => new MutationType(),
+        'mutation' => Types::get(MutationType::class)(),
         'typeLoader' => static fn(string $name): Type => Types::byTypeName($name),
     ]);
 
     $apiContext = new ApiContext();
     $apiContext->shopContext = Context::getContext();
     $apiContext->request = $_REQUEST;
+
+    $input = (array)(((array)@json_decode(file_get_contents('php://input')))['variables'] ?? []);
+    $_GET = [];
+    foreach ($input as $key => $value) {
+        if (strpos($key, 'req_') !== 0) {
+            continue;
+        }
+        $_GET[substr($key, 4)] = $value;
+    }
+    if (isset($input['req_lang_id']) && (int)$input['req_lang_id'] >= 0) {
+        $apiContext->shopContext->language = new Language((int)$input['req_lang_id']);
+        $apiContext->shopContext->cookie->id_lang = (int)$input['req_lang_id'];
+    } elseif (isset($input['req_lang_iso']) && Validate::isLangIsoCode($input['req_lang_iso'])) {
+        $apiContext->shopContext->language = new Language(Language::getIdByIso($input['req_lang_iso']));
+        $apiContext->shopContext->cookie->id_lang = Language::getIdByIso($input['req_lang_iso']);
+    }
+//    var_dump($_GET);
+//    die();
 
 //AuthService::authMiddleware($apiContext);
 
@@ -66,7 +85,7 @@ try {
             [
                 new Rules\QueryComplexity(100),
                 new Rules\DisableIntrospection(),
-                new QueryDepth(10),
+                new Rules\QueryDepth(10),
             ]
         );
     }

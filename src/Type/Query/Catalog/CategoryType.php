@@ -39,6 +39,7 @@ class CategoryType extends ObjectType
                 'meta_description' => Type::string(),
                 'id_parent' => Type::id(),
                 'position' => Type::int(),
+                'level_depth' => Type::int(),
             ],
         ];
     }

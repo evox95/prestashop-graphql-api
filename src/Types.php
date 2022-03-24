@@ -53,15 +53,15 @@ final class Types extends Type
         return self::$types[$cacheName];
     }
 
-    private static function loadClassOverride(string &$classname): void
-    {
-        $classname = str_replace(
-            'PrestaShop\\API\\GraphQL\\',
-            'PrestaShop\\API\\GraphQL\\',
-            $classname
-        );
-        require_once __DIR__ . '/../override/modules/api_graphql/src/QueryType.php';
-    }
+//    private static function loadClassOverride(string &$classname): void
+//    {
+//        $classname = str_replace(
+//            'PrestaShop\\API\\GraphQL\\',
+//            'PrestaShop\\API\\GraphQL\\',
+//            $classname
+//        );
+//        require_once __DIR__ . '/../override/modules/api_graphql/src/QueryType.php';
+//    }
 
     public static function byTypeName(string $shortName): Type
     {

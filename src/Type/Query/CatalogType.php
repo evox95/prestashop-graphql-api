@@ -19,10 +19,13 @@ use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
+use PrestaShop\API\GraphQL\Service\ProductListingService;
 use PrestaShop\API\GraphQL\Type\Query\Catalog\CategoryType;
+use PrestaShop\API\GraphQL\Type\Query\Catalog\Listing\ResultsType;
 use PrestaShop\API\GraphQL\Type\Query\Catalog\ProductType;
 use PrestaShop\API\GraphQL\Types;
 use PrestaShop\PrestaShop\Adapter\Entity\Category;
+use PrestaShop\PrestaShop\Adapter\Entity\Configuration;
 use PrestaShop\PrestaShop\Adapter\Entity\Db;
 use PrestaShop\PrestaShop\Adapter\Entity\DbQuery;
 use PrestaShop\PrestaShop\Adapter\Entity\Product;
@@ -52,27 +55,27 @@ class CatalogType extends ObjectType
                         'id' => new NonNull(Types::id()),
                     ],
                 ],
-                'products' => [
-                    'type' => new ListOfType(Types::get(ProductType::class)),
+                'search' => [
+                    'type' => Types::get(ResultsType::class),
                     'description' => 'Returns subset of products',
                     'args' => [
-                        'offset' => [
+                        'results_per_page' => [
                             'type' => Types::int(),
-                            'description' => 'Offset',
-                            'defaultValue' => 0,
-                        ],
-                        'limit' => [
-                            'type' => Types::int(),
-                            'description' => 'Limit',
                             'defaultValue' => 10,
+                        ],
+                        'page' => [
+                            'type' => Types::int(),
+                            'defaultValue' => 1,
                         ],
                         'id_category' => [
                             'type' => Types::id(),
                             'description' => 'Filter by category id',
                         ],
-                        'id_category_default' => [
-                            'type' => Types::id(),
-                            'description' => 'Filter by category default id',
+                        'order' => [
+                            'type' => Types::string(),
+                        ],
+                        'query' => [
+                            'type' => Types::string(),
                         ],
                     ],
                 ],
@@ -110,7 +113,7 @@ class CatalogType extends ObjectType
      */
     public function getProduct($rootValue, array $args, ApiContext $context, ResolveInfo $info): Product
     {
-        $object = new Product((int) $args['id'], true, $context->shopContext->language->id);
+        $object = new Product((int)$args['id'], true, $context->shopContext->language->id);
 
         return $object->active ? $object : new Product();
     }
@@ -125,41 +128,31 @@ class CatalogType extends ObjectType
      */
     public function getCategory($rootValue, array $args, ApiContext $context, ResolveInfo $info): Category
     {
-        $object = new Category((int) $args['id'], $context->shopContext->language->id);
+        $object = new Category((int)$args['id'], $context->shopContext->language->id);
 
         return $object->active ? $object : new Category();
     }
 
     /**
      * @param null $rootValue
-     * @param array{limit: int, offset: int, id_category_default?: int, id_category?: int} $args
+     * @param array{results_per_page: int, page: int, id_category?: int, order: string} $args
      * @param ApiContext $context
      * @param ResolveInfo $info
-     *
-     * @return Generator
-     *
-     * @throws PrestaShopDatabaseException
+     * @return ResultsType
      */
-    public function getProducts($rootValue, array $args, ApiContext $context, ResolveInfo $info): Generator
+    public function getSearch($rootValue, array $args, ApiContext $context, ResolveInfo $info): ResultsType
     {
-        $dbQuery = new DbQuery();
-        $dbQuery->select('a.id_product');
-        $dbQuery->from(Product::$definition['table'], 'a');
-        $dbQuery->where('a.active = 1');
+        $listingService = new ProductListingService();
+        $variables = $listingService->getProducts(
+            (int)($args['id_category'] ?? (int) Configuration::get('PS_ROOT_CATEGORY')),
+            $args['order'] ?? '',
+            $args['query'] ?? '',
+            (int)$args['results_per_page'],
+            (int)$args['page']
+        );
+        $context->productSearchResults = $variables;
 
-        if ($filter = $args['id_category_default'] ?? 0) {
-            $dbQuery->where('a.id_category_default = ' . (int) $filter);
-        }
-        if ($filter = $args['id_category'] ?? 0) {
-            $dbQuery->innerJoin('category_product', 'cp', 'a.id_product = cp.id_product');
-            $dbQuery->where('cp.id_category = ' . (int) $filter);
-        }
-        $dbQuery->limit($args['limit'], $args['offset']);
-
-        $results = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($dbQuery);
-        foreach ($results as $result) {
-            yield new Product($result[Product::$definition['primary']], true, $context->shopContext->language->id);
-        }
+        return new ResultsType();
     }
 
     /**
@@ -180,13 +173,13 @@ class CatalogType extends ObjectType
         $dbQuery->where('a.active = 1');
 
         if ($filter = $args['id_parent'] ?? 0) {
-            $dbQuery->where('a.id_parent = ' . (int) $filter);
+            $dbQuery->where('a.id_parent = ' . (int)$filter);
         }
         $dbQuery->limit($args['limit'], $args['offset']);
 
         $results = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($dbQuery);
         foreach ($results as $result) {
-            yield new Category($result[Category::$definition['primary']], $context->shopContext->language->id);
+            yield new Category($result[Category::$definition['primary']], $context->shopContext->cookie->id_lang);
         }
     }
 }

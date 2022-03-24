@@ -16,6 +16,7 @@ use Context;
 
 /**
  * Instance available in all GraphQL resolvers as 3rd argument.
+ * @property array $productSearchResults
  */
 class ApiContext
 {

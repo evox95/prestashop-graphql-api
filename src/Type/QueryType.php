@@ -19,13 +19,6 @@ use PrestaShop\API\GraphQL\Model\ObjectType;
 
 class QueryType extends ObjectType
 {
-    public function __construct()
-    {
-        parent::__construct([
-            'name' => 'Query',
-            'fields' => self::getFieldsByClassNamespace('PrestaShop\API\GraphQL\Type\Query'),
-        ]);
-    }
 
     protected static function getSchema(): array
     {

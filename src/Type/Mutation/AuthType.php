@@ -18,7 +18,7 @@ use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Service\AuthService;
-use PrestaShop\API\GraphQL\Exception\ApiSafeException;
+//use PrestaShop\API\GraphQL\Exception\ApiSafeException;
 use PrestaShop\API\GraphQL\Model\ObjectType;
 //use PrestaShop\API\GraphQL\Type\Mutation\Auth\AuthTokenType;
 use PrestaShop\API\GraphQL\Type\Query\CustomerType;
