@@ -34,8 +34,8 @@ use PrestaShop\API\GraphQL\Type\MutationType;
 use PrestaShop\API\GraphQL\Type\QueryType;
 use PrestaShop\API\GraphQL\Types;
 use PrestaShop\PrestaShop\Adapter\Entity\Context;
-use PrestaShop\PrestaShop\Adapter\Entity\Validate;
 use PrestaShop\PrestaShop\Adapter\Entity\Language;
+use PrestaShop\PrestaShop\Adapter\Entity\Validate;
 
 // @todo: Allow enabled front-office token
 if (Configuration::get('PS_TOKEN_ENABLE')) {
@@ -107,11 +107,22 @@ try {
     $server->handleRequest();
 
 } catch (Throwable $error) {
+    $msg = sprintf(
+        '%s at line %d in file %s',
+        Tools::safeOutput($error->getMessage(), true),
+        $error->getLine(),
+        ltrim(str_replace([_PS_ROOT_DIR_, '\\'], ['', '/'], $error->getFile()), '/')
+    );
+    $logger = new FileLogger();
+    $logger->setFilename(_PS_ROOT_DIR_ . '/var/logs/' . date('Ymd') . '_api_graphql_exception.log');
+    $logger->logError($msg);
+    $logger->logError($error->getTraceAsString());
+
     http_response_code(500);
     echo json_encode([
-        'erorrs' => [
+        'errors' => [
             $error->getMessage()
-        ]
+        ],
     ]);
 //    StandardServer::send500Error($error);
 }

@@ -16,6 +16,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
+use PrestaShop\PrestaShop\Adapter\Entity\Configuration;
 use PrestaShop\PrestaShop\Adapter\Entity\Language;
 
 class CustomerType extends ObjectType
@@ -43,7 +44,8 @@ class CustomerType extends ObjectType
 
     protected function actionIsoLang($objectValue, $args, ApiContext $context, ResolveInfo $info): string
     {
-        return Language::getIsoById($context->shopContext->customer->id_lang);
+        return (string)Language::getIsoById($context->shopContext->customer->id_lang)
+            ?? Language::getIsoById(Configuration::get('PS_LANG_DEFAULT'));
     }
 
 }

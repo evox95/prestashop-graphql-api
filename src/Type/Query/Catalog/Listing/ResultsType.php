@@ -73,6 +73,7 @@ class ResultsType extends ObjectType
         $filters = $context->productSearchResults['facets']['activeFilters'] ?? [];
         foreach ($filters as $filter) {
             $filter['properties'] = json_encode($filter['properties']);
+            $filter['value'] = json_encode($filter['value']);
             yield $filter;
         }
     }
@@ -100,6 +101,7 @@ class ResultsType extends ObjectType
 
             foreach ($data['options'] as &$option) {
                 $option['properties'] = json_encode($option['properties']);
+                $option['value'] = json_encode($option['value']);
             }
 
             yield $data;

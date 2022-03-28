@@ -21,6 +21,7 @@ use PrestaShop\PrestaShop\Adapter\Entity\Tools;
 use PrestaShop\PrestaShop\Adapter\Entity\Validate;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Core\Product\Search\Exception\InvalidSortOrderDirectionException;
+use PrestaShop\PrestaShop\Core\Product\Search\FacetsRendererInterface;
 use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchProviderInterface;
 use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchQuery;
 use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchResult;
@@ -105,6 +106,10 @@ class ProductListingService extends ProductListingFrontController
 
         $query->setEncodedFacets($encodedFacets);
 
+        Hook::exec('actionProductSearchProviderRunQueryBefore', [
+            'query' => $query,
+        ]);
+
         // We're ready to run the actual query!
 
         /** @var ProductSearchResult $result */
@@ -112,6 +117,11 @@ class ProductListingService extends ProductListingFrontController
             $context,
             $query
         );
+
+        Hook::exec('actionProductSearchProviderRunQueryAfter', [
+            'query' => $query,
+            'result' => $result,
+        ]);
 
         if (Configuration::get('PS_CATALOG_MODE') && !Configuration::get('PS_CATALOG_MODE_WITH_PRICES')) {
             $this->disablePriceControls($result);
@@ -166,9 +176,9 @@ class ProductListingService extends ProductListingFrontController
             'sort_selected' => $sort_selected,
             'pagination' => $pagination,
             'facets' => $facets,
-            'current_url' => $this->updateQueryString(array(
-                'q' => $result->getEncodedFacets(),
-            )),
+//            'current_url' => $this->updateQueryString(array(
+//                'q' => $result->getEncodedFacets(),
+//            )),
         );
 
         Hook::exec('filterProductSearch', array('searchVariables' => &$searchVariables));
@@ -187,7 +197,7 @@ class ProductListingService extends ProductListingFrontController
         return $retriever->getImage($object, $id_image);
     }
 
-    private function getProductSearchProviderFromModules($query)
+    private function getProductSearchProviderFromModules($query): ?ProductSearchProviderInterface
     {
         $providers = Hook::exec(
             'productSearchProvider',
@@ -205,6 +215,7 @@ class ProductListingService extends ProductListingFrontController
                 return $provider;
             }
         }
+        return null;
     }
 
     protected function getFacets(ProductSearchResult $result)
@@ -259,7 +270,7 @@ class ProductListingService extends ProductListingFrontController
      * @return ProductSearchQuery
      * @throws InvalidSortOrderDirectionException
      */
-    protected function getProductSearchQuery()
+    protected function getProductSearchQuery(): ProductSearchQuery
     {
         $query = new ProductSearchQuery();
         $query
@@ -286,4 +297,5 @@ class ProductListingService extends ProductListingFrontController
             $this->category
         );
     }
+
 }
