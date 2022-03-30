@@ -21,7 +21,6 @@ use PrestaShop\PrestaShop\Adapter\Entity\Tools;
 use PrestaShop\PrestaShop\Adapter\Entity\Validate;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Core\Product\Search\Exception\InvalidSortOrderDirectionException;
-use PrestaShop\PrestaShop\Core\Product\Search\FacetsRendererInterface;
 use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchProviderInterface;
 use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchQuery;
 use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchResult;
