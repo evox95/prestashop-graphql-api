@@ -40,10 +40,6 @@ class ResultsType extends ObjectType
                     'type' => new ListOfType(Types::get(FilterType::class)),
                     'description' => '',
                 ],
-                'filters_active' => [
-                    'type' => new ListOfType(Types::get(FilterOptionType::class)),
-                    'description' => '',
-                ],
                 'sort_selected' => [
                     'type' => Types::string(),
                     'description' => '',
@@ -68,16 +64,6 @@ class ResultsType extends ObjectType
         return $context->productSearchResults['pagination'];
     }
 
-    public function getFiltersActive($rootValue, array $args, ApiContext $context, ResolveInfo $info): Generator
-    {
-        $filters = $context->productSearchResults['facets']['activeFilters'] ?? [];
-        foreach ($filters as $filter) {
-            $filter['properties'] = json_encode($filter['properties']);
-            $filter['value'] = json_encode($filter['value']);
-            yield $filter;
-        }
-    }
-
     public function getSortOrders($rootValue, array $args, ApiContext $context, ResolveInfo $info): array
     {
         return $context->productSearchResults['sort_orders'];
@@ -91,9 +77,9 @@ class ResultsType extends ObjectType
     public function getFilters($rootValue, array $args, ApiContext $context, ResolveInfo $info): Generator
     {
         /** @var \PrestaShop\PrestaShop\Core\Product\Search\Facet[] $facets */
-        $filters = $context->productSearchResults['facets']['filters'] ?? false;
+        $filters = $context->productSearchResults['facets'] ?? false;
         if (!$filters) return;
-        foreach ($filters->getFacets() as $filter) {
+        foreach ($filters as $filter) {
             $data = $filter->toArray();
 
             $data['options'] = $data['filters'];

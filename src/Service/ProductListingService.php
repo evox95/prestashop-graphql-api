@@ -18,7 +18,6 @@ use PrestaShop\PrestaShop\Adapter\Entity\Configuration;
 use PrestaShop\PrestaShop\Adapter\Entity\Hook;
 use PrestaShop\PrestaShop\Adapter\Entity\ProductListingFrontController;
 use PrestaShop\PrestaShop\Adapter\Entity\Tools;
-use PrestaShop\PrestaShop\Adapter\Entity\Validate;
 use PrestaShop\PrestaShop\Adapter\Image\ImageRetriever;
 use PrestaShop\PrestaShop\Core\Product\Search\Exception\InvalidSortOrderDirectionException;
 use PrestaShop\PrestaShop\Core\Product\Search\ProductSearchProviderInterface;
@@ -61,11 +60,6 @@ class ProductListingService extends ProductListingFrontController
 
     protected function getProductSearchVariables()
     {
-        /*
-         * To render the page we need to find something (a ProductSearchProviderInterface)
-         * that knows how to query products.
-         */
-
         // the search provider will need a context (language, shop...) to do its job
         $context = $this->getProductSearchContext();
 
@@ -126,21 +120,6 @@ class ProductListingService extends ProductListingFrontController
             $this->disablePriceControls($result);
         }
 
-        // sort order is useful for template,
-        // add it if undefined - it should be the same one
-        // as for the query anyway
-        if (!$result->getCurrentSortOrder()) {
-            $result->setCurrentSortOrder($query->getSortOrder());
-        }
-
-        // prepare the products
-        $products = $result->getProducts();
-
-        // render the facets
-        $facets = $this->getFacets(
-            $result
-        );
-
         $pagination = $this->getTemplateVarPagination(
             $query,
             $result
@@ -169,15 +148,11 @@ class ProductListingService extends ProductListingFrontController
 
         $searchVariables = array(
             'result' => $result,
-            'label' => $this->getListingLabel(),
-            'products' => $products,
+            'products' => $result->getProducts(),
             'sort_orders' => $sort_orders,
             'sort_selected' => $sort_selected,
             'pagination' => $pagination,
-            'facets' => $facets,
-//            'current_url' => $this->updateQueryString(array(
-//                'q' => $result->getEncodedFacets(),
-//            )),
+            'facets' => $result->getFacetCollection()->getFacets(),
         );
 
         Hook::exec('filterProductSearch', array('searchVariables' => &$searchVariables));
@@ -217,48 +192,15 @@ class ProductListingService extends ProductListingFrontController
         return null;
     }
 
-    protected function getFacets(ProductSearchResult $result)
+    protected function getFacets(ProductSearchResult $result): array
     {
         $facetCollection = $result->getFacetCollection();
-        // not all search providers generate menus
-        if (empty($facetCollection)) {
-            return '';
-        }
-
-        $facetsVar = array_map(
-            [$this, 'prepareFacetForTemplate'],
-            $facetCollection->getFacets()
-        );
-
-        $activeFilters = [];
-        foreach ($facetsVar as $facet) {
-            foreach ($facet['filters'] as $filter) {
-                if ($filter['active']) {
-                    $activeFilters[] = $filter;
-                }
-            }
-        }
-
-        return [
-            'filters' => $facetCollection,
-            'activeFilters' => $activeFilters
-        ];
+        return ['filters' => $facetCollection];
     }
 
     public function getListingLabel()
     {
-        if (!Validate::isLoadedObject($this->category)) {
-            $this->category = new Category(
-                $this->category->id,
-                $this->context->language->id
-            );
-        }
 
-        return $this->trans(
-            'Category: %category_name%',
-            array('%category_name%' => $this->category->name),
-            'Shop.Theme.Catalog'
-        );
     }
 
     /**

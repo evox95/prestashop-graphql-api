@@ -12,10 +12,14 @@ declare(strict_types=1);
 
 namespace PrestaShop\API\GraphQL\Type\Query\Catalog;
 
+use Generator;
+use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
+use PrestaShop\API\GraphQL\Types;
+use PrestaShop\PrestaShop\Adapter\Entity\Image;
 use Product;
 
 class ProductType extends ObjectType
@@ -47,6 +51,18 @@ class ProductType extends ObjectType
                     'description' => '',
                 ],
                 'name' => [
+                    'type' => Type::string(),
+                    'description' => '',
+                ],
+                'meta_description' => [
+                    'type' => Type::string(),
+                    'description' => '',
+                ],
+                'meta_keywords' => [
+                    'type' => Type::string(),
+                    'description' => '',
+                ],
+                'meta_title' => [
                     'type' => Type::string(),
                     'description' => '',
                 ],
@@ -182,12 +198,20 @@ class ProductType extends ObjectType
                     'type' => Type::string(),
                     'description' => '',
                 ],
+                'images' => [
+                    'type' => new ListOfType(Types::get(ProductImageType::class)),
+                    'description' => '',
+                ],
             ],
         ];
     }
 
     protected function getCoverUrl(Product $rootValue, array $args, ApiContext $context, ResolveInfo $info): string
     {
+        $result = $rootValue->getCover($rootValue->id)['id_image'] ?? 0;
+        if (!$result) {
+            return '';
+        }
         return $context->shopContext->link->getImageLink('none', $rootValue->getCoverWs());
     }
 
@@ -205,5 +229,18 @@ class ProductType extends ObjectType
         return (float) $rootValue->getPrice(
             true, $args['id_product_attribute'] ?? 0
         );
+    }
+
+    protected function getImages(
+        Product $rootValue, array $args, ApiContext $context, ResolveInfo $info
+    ): Generator {
+        $images = $rootValue->getImages(
+            $context->shopContext->language->id, $context->shopContext
+        );
+        foreach ($images as $image) {
+            $image['id'] = $image['id_image'];
+            unset($image['id_image']);
+            yield $image;
+        }
     }
 }
