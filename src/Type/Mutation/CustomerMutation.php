@@ -16,8 +16,10 @@ use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
+use PrestaShop\API\GraphQL\Type\Mutation\Customer\AddressMutation;
 use PrestaShop\API\GraphQL\Types;
 use PrestaShop\PrestaShop\Adapter\Entity\Currency;
+use PrestaShop\PrestaShop\Adapter\Entity\Customer;
 use PrestaShop\PrestaShop\Adapter\Entity\Language;
 use PrestaShop\PrestaShop\Adapter\Entity\Validate;
 
@@ -34,12 +36,26 @@ class CustomerMutation extends ObjectType
                         'lang_iso' => new NonNull(Types::string()),
                     ],
                 ],
+                'set_email' => [
+                    'type' => Types::boolean(),
+                    'args' => [
+                        'email' => new NonNull(Types::string()),
+                    ],
+                ],
+                'set_name' => [
+                    'type' => Types::boolean(),
+                    'args' => [
+                        'firstname' => new NonNull(Types::string()),
+                        'lastname' => new NonNull(Types::string()),
+                    ],
+                ],
                 'set_currency' => [
                     'type' => Types::boolean(),
                     'args' => [
                         'id_currency' => new NonNull(Types::int()),
                     ],
                 ],
+                'address' => Types::get(AddressMutation::class),
             ],
         ];
     }
@@ -78,5 +94,33 @@ class CustomerMutation extends ObjectType
         $context->shopContext->cookie->id_currency = $idCurrency;
         $context->shopContext->cookie->write();
         return true;
+    }
+
+    protected function actionSetEmail($objectValue, $args, ApiContext $context, ResolveInfo $info): bool
+    {
+        $email = $args['email'];
+        if (!Validate::isEmail($email)) {
+            return false;
+        }
+        $customers = Customer::getCustomersByEmail($email);
+        if (count($customers) > 0) {
+            return false;
+        }
+
+        $context->shopContext->customer->email = $email;
+        return (bool)$context->shopContext->customer->save();
+    }
+
+    protected function actionSetName($objectValue, $args, ApiContext $context, ResolveInfo $info): bool
+    {
+        $firstname = $args['firstname'];
+        $lastname = $args['lastname'];
+        if (!Validate::isGenericName($firstname) || !Validate::isGenericName($lastname)) {
+            return false;
+        }
+
+        $context->shopContext->customer->firstname = $firstname;
+        $context->shopContext->customer->lastname = $lastname;
+        return (bool)$context->shopContext->customer->save();
     }
 }

@@ -15,9 +15,6 @@ header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
 header('Access-Control-Max-Age: 3600');
 
-//echo json_encode(['data' => $_COOKIE]);
-//die();
-
 require_once __DIR__ . '/../../config/config.inc.php';
 require_once __DIR__ . '/../../init.php';
 require_once __DIR__ . '/vendor/autoload.php';
