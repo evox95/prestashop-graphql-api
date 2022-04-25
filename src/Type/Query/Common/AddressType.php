@@ -47,6 +47,7 @@ class AddressType extends ObjectType
 
     protected function getCountryName(Address $objectValue, $args, ApiContext $context, ResolveInfo $info): string
     {
-        return Country::getNameById($context->shopContext->language->id, $objectValue->id_country);
+        $name = Country::getNameById($context->shopContext->language->id, $objectValue->id_country);
+        return is_string($name) ? $name : '';
     }
 }
