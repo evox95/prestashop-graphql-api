@@ -27,6 +27,7 @@ class DeliveryOptionCarrierType extends ObjectType
             'fields' => [
                 'id' => ['type' => Type::int()],
                 'name' => ['type' => Type::string()],
+                'delay' => ['type' => Type::string()],
                 'logo_url' => ['type' => Type::string()],
                 'price_with_tax' => ['type' => Type::float()],
                 'price_without_tax' => ['type' => Type::float()],
@@ -57,6 +58,18 @@ class DeliveryOptionCarrierType extends ObjectType
     protected function getName(array $objectValue, $args, ApiContext $context, ResolveInfo $info): string
     {
         return $objectValue['instance']->name;
+    }
+
+    /**
+     * @param array{instance: Carrier} $objectValue
+     * @param $args
+     * @param ApiContext $context
+     * @param ResolveInfo $info
+     * @return mixed
+     */
+    protected function getDelay(array $objectValue, $args, ApiContext $context, ResolveInfo $info): string
+    {
+        return $objectValue['instance']->delay;
     }
 
     /**
