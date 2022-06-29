@@ -10,26 +10,22 @@
 
 declare(strict_types=1);
 
-namespace PrestaShop\API\GraphQL\Type\Mutation;
+namespace PrestaShop\API\GraphQL\Type\Query\Sell\Checkout;
 
 use PrestaShop\API\GraphQL\Model\ObjectType;
-use PrestaShop\API\GraphQL\Type\Mutation\Sell\CartMutation;
-use PrestaShop\API\GraphQL\Type\Mutation\Sell\CheckoutMutation;
 use PrestaShop\API\GraphQL\Types;
 
-class SellType extends ObjectType
+class DeliveryType extends ObjectType
 {
     protected static function getSchema(): array
     {
         return [
-            'name' => 'Sell',
+            'name' => 'Delivery',
             'fields' => [
-                'cart' => [
-                    'type' => Types::get(CartMutation::class),
-                ],
-                'checkout' => [
-                    'type' => Types::get(CheckoutMutation::class),
-                ],
+                'delivery_option' => Types::string(),
+                'recyclable' => Types::boolean(),
+                'gift' => Types::boolean(),
+                'gift_message' => Types::string(),
             ],
         ];
     }

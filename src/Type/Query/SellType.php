@@ -21,6 +21,7 @@ use ObjectModel;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
 use PrestaShop\API\GraphQL\Type\Query\Sell\CartType;
+use PrestaShop\API\GraphQL\Type\Query\Sell\CheckoutType;
 use PrestaShop\API\GraphQL\Type\Query\Sell\OrderType;
 use PrestaShop\API\GraphQL\Types;
 use PrestaShop\PrestaShop\Adapter\Entity\Db;
@@ -39,6 +40,10 @@ class SellType extends ObjectType
             'fields' => [
                 'cart' => [
                     'type' => Types::get(CartType::class),
+                    'description' => 'Get cart',
+                ],
+                'checkout' => [
+                    'type' => Types::get(CheckoutType::class),
                     'description' => 'Get cart',
                 ],
                 'order' => [
@@ -69,6 +74,19 @@ class SellType extends ObjectType
      * @return Cart|null
      */
     public function getCart($rootValue, array $args, ApiContext $context, ResolveInfo $info): ?Cart
+    {
+        return $context->shopContext->cart;
+    }
+
+    /**
+     * @param null $rootValue
+     * @param array $args
+     * @param ApiContext $context
+     * @param ResolveInfo $info
+     *
+     * @return Cart|null
+     */
+    public function getCheckout($rootValue, array $args, ApiContext $context, ResolveInfo $info): ?Cart
     {
         return $context->shopContext->cart;
     }

@@ -143,14 +143,6 @@ class CatalogType extends ObjectType
     public function getSearch($rootValue, array $args, ApiContext $context, ResolveInfo $info): ResultsType
     {
         $listingService = new ProductListingService();
-//        var_dump(
-//            (int)($args['id_category'] ?? (int) Configuration::get('PS_ROOT_CATEGORY')),
-//            $args['order'] ?? '',
-//            (string)$args['query'] ?? '',
-//            (int)$args['results_per_page'],
-//            (int)$args['page']
-//        );
-//        die();
         $context->productSearchResults = $listingService->getProducts(
             (int)($args['id_category'] ?? (int) Configuration::get('PS_ROOT_CATEGORY')),
             $args['order'] ?? '',

@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace PrestaShop\API\GraphQL\Type\Query\Sell\Cart;
+namespace PrestaShop\API\GraphQL\Type\Query\Sell\Checkout;
 
 use Carrier;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -45,7 +45,7 @@ class DeliveryOptionCarrierType extends ObjectType
      */
     protected function getId(array $objectValue, $args, ApiContext $context, ResolveInfo $info): int
     {
-        return (int)$objectValue['instance']->id_reference;
+        return (int)$objectValue['instance']->id;
     }
 
     /**
