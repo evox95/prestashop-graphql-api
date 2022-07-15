@@ -40,15 +40,15 @@ class SellType extends ObjectType
             'fields' => [
                 'cart' => [
                     'type' => Types::get(CartType::class),
-                    'description' => 'Get cart',
+                    'description' => '',
                 ],
                 'checkout' => [
                     'type' => Types::get(CheckoutType::class),
-                    'description' => 'Get cart',
+                    'description' => '',
                 ],
                 'order' => [
                     'type' => Types::get(OrderType::class),
-                    'description' => 'Get order',
+                    'description' => '',
                     'args' => [
                         'reference' => new NonNull(Types::string()),
                     ],
@@ -105,7 +105,7 @@ class SellType extends ObjectType
             return null;
         }
 
-        /** @var bool|\Order $order */
+        /** @var bool|Order $order */
         $order = Order::getByReference($reference)->getFirst();
         if (!$order) {
             return null;
@@ -140,17 +140,14 @@ class SellType extends ObjectType
 
         $query = 'SELECT o.`id_order`
             FROM `' . _DB_PREFIX_ . 'orders` o
-            WHERE 
-                ' . (
+            WHERE ' . (
             $dateFrom && $dateTo
                 ? 'o.`date_add` BETWEEN \'' . $dateFrom . ' 00:00:00\' AND \'' . $dateTo . ' 23:59:59\' AND'
                 : ''
-            ) . '
-                o.`id_customer` = ' . (int)$context->shopContext->customer->id
+            ) . ' o.`id_customer` = ' . (int)$context->shopContext->customer->id
             . Shop::addSqlRestriction(Shop::SHARE_ORDER) . '
             ORDER BY o.`date_add` DESC';
         $res = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($query);
-
         foreach ($res as $val) {
             yield new Order($val['id_order']);
         }

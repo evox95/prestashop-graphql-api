@@ -25,7 +25,8 @@ class DeliveryOptionCarrierType extends ObjectType
         return [
             'name' => 'DeliveryOptionCarrier',
             'fields' => [
-                'id' => ['type' => Type::int()],
+                'id' => ['type' => Type::id()],
+                'id_reference' => ['type' => Type::id()],
                 'name' => ['type' => Type::string()],
                 'delay' => ['type' => Type::string()],
                 'logo_url' => ['type' => Type::string()],
@@ -46,6 +47,18 @@ class DeliveryOptionCarrierType extends ObjectType
     protected function getId(array $objectValue, $args, ApiContext $context, ResolveInfo $info): int
     {
         return (int)$objectValue['instance']->id;
+    }
+
+    /**
+     * @param array{instance: Carrier} $objectValue
+     * @param $args
+     * @param ApiContext $context
+     * @param ResolveInfo $info
+     * @return mixed
+     */
+    protected function getIdReference(array $objectValue, $args, ApiContext $context, ResolveInfo $info): int
+    {
+        return (int)$objectValue['instance']->id_reference;
     }
 
     /**

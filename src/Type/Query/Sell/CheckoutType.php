@@ -16,6 +16,7 @@ use Cart;
 use Generator;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ResolveInfo;
+use OrderControllerCore;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
 use PrestaShop\API\GraphQL\Type\Query\Common\AddressType;
@@ -35,7 +36,6 @@ class CheckoutType extends ObjectType
         return [
             'name' => 'Checkout',
             'fields' => [
-//                'delivery' => Types::get(DeliveryType::class),
                 'delivery_option' => Types::get(DeliveryOptionType::class),
                 'delivery_options' => new ListOfType(Types::get(DeliveryOptionType::class)),
 
@@ -46,14 +46,11 @@ class CheckoutType extends ObjectType
                 'address_delivery' => Types::get(AddressType::class),
                 'id_address_invoice' => Types::id(),
                 'address_invoice' => Types::get(AddressType::class),
+
+                'message' => Types::string(),
             ],
         ];
     }
-
-//    protected function getDelivery(Cart $objectValue, $args, ApiContext $context, ResolveInfo $info): Address
-//    {
-//        return new Address($objectValue->id_address_delivery);
-//    }
 
     protected function getAddressDelivery(Cart $objectValue, $args, ApiContext $context, ResolveInfo $info): Address
     {
@@ -80,14 +77,9 @@ class CheckoutType extends ObjectType
             ORDER BY o.`date_add` DESC'
         );
         if ($lastOrderPaymentModuleName) {
-            $paymentOptionsFinder = new PaymentOptionsFinder();
-            $list = $paymentOptionsFinder->find();
-            foreach ($list as $paymentOptions) {
-                /** @var PaymentOption[] $paymentOptions */
-                foreach ($paymentOptions as $paymentOption) {
-                    if ($paymentOption->getModuleName() == $lastOrderPaymentModuleName) {
-                        return $paymentOption;
-                    }
+            foreach ($this->getPaymentOptionsList() as $paymentOption) {
+                if ($paymentOption->getModuleName() == $lastOrderPaymentModuleName) {
+                    return $paymentOption;
                 }
             }
         }
@@ -96,21 +88,25 @@ class CheckoutType extends ObjectType
 
     protected function getPaymentOptions(Cart $objectValue, $args, ApiContext $context, ResolveInfo $info): Generator
     {
-        $paymentOptionsFinder = new PaymentOptionsFinder();
-        $list = $paymentOptionsFinder->find();
-        foreach ($list as $paymentOptions) {
-            /** @var PaymentOption[] $paymentOptions */
-            foreach ($paymentOptions as $paymentOption) {
-                yield $paymentOption;
-            }
+        return $this->getPaymentOptionsList();
+    }
+
+    protected function getMessage(Cart $objectValue, $args, ApiContext $context, ResolveInfo $info): string
+    {
+        $orderCtrl = new OrderControllerCore();
+        $orderCtrl->init();
+//        $orderCtrl->postProcess();
+//        $orderCtrl->initContent();
+        $session = $orderCtrl->getCheckoutSession();
+        if (!$session->getCart()->id) {
+            return '';
         }
+        return (string)$session->getMessage();
     }
 
     protected function getDeliveryOptions(Cart $objectValue, $args, ApiContext $context, ResolveInfo $info): Generator
     {
         $list = $context->shopContext->cart->getDeliveryOptionList();
-//        var_dump($list);
-//        die();
         foreach ($list[$objectValue->id_address_delivery] as $deliveryOptionStr => $data) {
             yield [
                 'delivery_option' => $deliveryOptionStr,
@@ -127,7 +123,7 @@ class CheckoutType extends ObjectType
                 'SELECT o.`id_carrier`
                 FROM `' . _DB_PREFIX_ . 'orders` o
                 WHERE o.`id_customer` = ' . (int)$context->shopContext->customer->id .
-                    Shop::addSqlRestriction(Shop::SHARE_ORDER) . '
+                Shop::addSqlRestriction(Shop::SHARE_ORDER) . '
                 ORDER BY o.`date_add` DESC'
             );
             if (!$lastOrderCarrierId) {
@@ -144,6 +140,17 @@ class CheckoutType extends ObjectType
             'delivery_option' => $option[$objectValue->id_address_delivery],
             'carrier' => $carrier,
         ];
-//        return $option[$objectValue->id_address_delivery];
+    }
+
+    private function getPaymentOptionsList(): Generator
+    {
+        $paymentOptionsFinder = new PaymentOptionsFinder();
+        $list = $paymentOptionsFinder->find();
+        foreach ($list as $paymentOptions) {
+            /** @var PaymentOption[] $paymentOptions */
+            foreach ($paymentOptions as $paymentOption) {
+                yield $paymentOption;
+            }
+        }
     }
 }

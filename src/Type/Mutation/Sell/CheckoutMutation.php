@@ -14,6 +14,7 @@ namespace PrestaShop\API\GraphQL\Type\Mutation\Sell;
 
 use Exception;
 use GraphQL\Type\Definition\ResolveInfo;
+use OrderControllerCore;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
 use PrestaShop\API\GraphQL\Types;
@@ -34,10 +35,13 @@ class CheckoutMutation extends ObjectType
                     'type' => Types::boolean(),
                     'description' => 'Set delivery options',
                     'args' => [
+                        'id_address_delivery' => Types::id(),
+                        'id_address_invoice' => Types::id(),
                         'delivery_option' => Types::string(),
                         'recyclable' => Types::boolean(),
                         'gift' => Types::boolean(),
                         'gift_message' => Types::string(),
+                        'message' => Types::string(),
                     ],
                 ],
                 'create_order' => [
@@ -98,13 +102,29 @@ class CheckoutMutation extends ObjectType
 
     protected function actionUpdateDelivery($objectValue, $args, ApiContext $context, ResolveInfo $info): bool
     {
-        $orderCtrl = new \OrderControllerCore();
+        $orderCtrl = new OrderControllerCore();
         $orderCtrl->init();
 //        $orderCtrl->postProcess();
 //        $orderCtrl->initContent();
         $session = $orderCtrl->getCheckoutSession();
-        if (!$session->getCart()->id) {
+        $cart = $session->getCart();
+        if (!$cart->id) {
             return false;
+        }
+
+        if (isset($args['message'])) {
+            $session->setMessage(pSQL(trim($args['message'])));
+        }
+
+        if (isset($args['id_address_invoice'])) {
+            $session->setIdAddressInvoice((int)$args['id_address_invoice']);
+//            $targetDeliveryAddressId = $cart->id_address_delivery;
+//            $cart->updateAddressId($cart->id_address_invoice, (int)$args['id_address_invoice']);
+//            $cart->updateDeliveryAddressId($cart->id_address_delivery, $targetDeliveryAddressId);
+        }
+
+        if (isset($args['id_address_delivery'])) {
+            $cart->updateAddressId($cart->id_address_delivery, (int)$args['id_address_delivery']);
         }
 
         $result = true;
