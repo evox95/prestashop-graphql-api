@@ -10,11 +10,18 @@
 
 declare(strict_types=1);
 
-header('Access-Control-Allow-Origin: "http://localhost:3000"');
-header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Origin, X-Requested-With, content-type, Accept, Cookie');
-header('Access-Control-Max-Age: 3600');
+if (isset($_SERVER['HTTP_HOST'])) {
+    if ($_SERVER['HTTP_HOST'] == 'panel.arif.pl'){
+        header('Access-Control-Allow-Origin: https://app.arif.pl');
+    } else {
+        header('Access-Control-Allow-Origin: http://localhost:3000');
+    }
+
+    header('Access-Control-Allow-Credentials: true');
+    header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+    header('Access-Control-Allow-Headers: Origin, X-Requested-With, content-type, Accept, Cookie');
+    header('Access-Control-Max-Age: 3600');
+}
 
 // chrome and some other browser sends a preflight check with OPTIONS
 // if that is found, then we need to send response that it's okay
