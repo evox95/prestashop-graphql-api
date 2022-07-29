@@ -10,10 +10,25 @@
 
 declare(strict_types=1);
 
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: "http://localhost:3000"');
+header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
+header('Access-Control-Allow-Headers: Origin, X-Requested-With, content-type, Accept, Cookie');
 header('Access-Control-Max-Age: 3600');
+
+// chrome and some other browser sends a preflight check with OPTIONS
+// if that is found, then we need to send response that it's okay
+// @link https://stackoverflow.com/a/17125550/2754557
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    // need preflight here
+//    header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Cookie');
+    // add cache control for preflight cache
+    // @link https://httptoolkit.tech/blog/cache-your-cors/
+    header('Access-Control-Max-Age: 86400');
+    header('Cache-Control: public, max-age=86400');
+//    header('Vary: origin');
+    exit;
+}
 
 require_once __DIR__ . '/../../config/config.inc.php';
 require_once __DIR__ . '/../../init.php';
@@ -31,8 +46,6 @@ use PrestaShop\API\GraphQL\Type\MutationType;
 use PrestaShop\API\GraphQL\Type\QueryType;
 use PrestaShop\API\GraphQL\Types;
 use PrestaShop\PrestaShop\Adapter\Entity\Context;
-use PrestaShop\PrestaShop\Adapter\Entity\Language;
-use PrestaShop\PrestaShop\Adapter\Entity\Validate;
 
 // @todo: Allow enabled front-office token
 if (Configuration::get('PS_TOKEN_ENABLE')) {

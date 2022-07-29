@@ -58,8 +58,20 @@ class CustomerType extends ObjectType
 
     protected function actionIsoLang($objectValue, $args, ApiContext $context, ResolveInfo $info): string
     {
-        return (string)Language::getIsoById($context->shopContext->customer->id_lang)
-            ?? Language::getIsoById(Configuration::get('PS_LANG_DEFAULT'));
+        $result = $context->shopContext->language->iso_code;
+//        $result .= '/' . $context->shopContext->customer->id_lang;
+//        $result .= '/' . $context->shopContext->cookie->id_lang;
+        return $result;
+
+//    var_dump($apiContext->shopContext->language->iso_code);
+//    var_dump($apiContext->shopContext->customer->id_lang);
+//    var_dump($apiContext->shopContext->cookie->id_lang);
+//    die();
+
+//        return (string)$context->shopContext->language->iso_code;
+//        return (string)Language::getIsoById($context->shopContext->cookie->id_lang)
+//        return (string)Language::getIsoById($context->shopContext->customer->id_lang)
+//            ?? Language::getIsoById(Configuration::get('PS_LANG_DEFAULT'));
     }
 
     protected function getAddresses($objectValue, $args, ApiContext $context, ResolveInfo $info): Generator

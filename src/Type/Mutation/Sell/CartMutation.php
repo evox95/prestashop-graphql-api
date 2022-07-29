@@ -33,7 +33,7 @@ class CartMutation extends ObjectType
             'name' => 'CartMutation',
             'fields' => [
                 'delete_product' => [
-                    'type' => Types::get(CartType::class),
+                    'type' => Types::boolean(),
                     'description' => 'Add product to cart',
                     'args' => [
                         'id_product' => new NonNull(Types::int()),
@@ -41,7 +41,7 @@ class CartMutation extends ObjectType
                     ],
                 ],
                 'update_product' => [
-                    'type' => Types::get(CartType::class),
+                    'type' => Types::boolean(),
                     'description' => 'Add product to cart',
                     'args' => [
                         'id_product' => new NonNull(Types::int()),
@@ -49,67 +49,33 @@ class CartMutation extends ObjectType
                         'quantity' => new NonNull(Types::int()),
                     ],
                 ],
-                'add_cart_rule' => [
-                    'type' => Types::get(CartType::class),
-                    'description' => 'Add discount code',
-                    'args' => [
-                        'code' => new NonNull(Types::string()),
-                    ],
-                ],
-                'delete_cart_rule' => [
-                    'type' => Types::get(CartType::class),
-                    'description' => 'Delete cart rule',
-                    'args' => [
-                        'id_cart_rule' => new NonNull(Types::int()),
-                    ],
-                ],
             ],
         ];
     }
 
-    protected function actionAddCartRule($objectValue, $args, ApiContext $context, ResolveInfo $info): Cart
+    protected function actionUpdateProduct($objectValue, $args, ApiContext $context, ResolveInfo $info): bool
     {
-        $args['addDiscount'] = true;
-        $args['discount_name'] = $args['code'];
-        $this->cartUpdate($args);
-
-        return $context->shopContext->cart;
+        $args['qty'] = $args['quantity'];
+        $args['op'] = $args['quantity'] > 0 ? 'up' : 'down';
+        $args['id_product_attribute'] = $args['id_product_attribute'] ?? 0;
+        $args['update'] = true;
+        return $this->cartUpdate($args);
     }
 
-    private function cartUpdate(array $args)
+    protected function actionDeleteProduct($objectValue, $args, ApiContext $context, ResolveInfo $info): bool
+    {
+        $args['delete'] = true;
+        return $this->cartUpdate($args);
+    }
+
+    private function cartUpdate(array $args): bool
     {
         $_GET = $args;
         $_GET['ajax'] = true;
         $cartCtrl = new CartControllerCore();
         $cartCtrl->init();
         $cartCtrl->postProcess();
+        return true;
 //        return $cartCtrl->errors;
-    }
-
-    protected function actionDeleteCartRule($objectValue, $args, ApiContext $context, ResolveInfo $info): Cart
-    {
-        $args['deleteDiscount'] = $args['id_cart_rule'];
-        $this->cartUpdate($args);
-
-        return $context->shopContext->cart;
-    }
-
-    protected function actionUpdateProduct($objectValue, $args, ApiContext $context, ResolveInfo $info): Cart
-    {
-        $args['qty'] = $args['quantity'];
-        $args['op'] = $args['quantity'] > 0 ? 'up' : 'down';
-        $args['id_product_attribute'] = $args['id_product_attribute'] ?? 0;
-        $args['update'] = true;
-        $this->cartUpdate($args);
-
-        return $context->shopContext->cart;
-    }
-
-    protected function actionDeleteProduct($objectValue, $args, ApiContext $context, ResolveInfo $info): Cart
-    {
-        $args['delete'] = true;
-        $this->cartUpdate($args);
-
-        return $context->shopContext->cart;
     }
 }

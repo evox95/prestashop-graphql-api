@@ -20,6 +20,7 @@ use OrderControllerCore;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
 use PrestaShop\API\GraphQL\Type\Query\Common\AddressType;
+use PrestaShop\API\GraphQL\Type\Query\Sell\Checkout\CartRuleType;
 use PrestaShop\API\GraphQL\Type\Query\Sell\Checkout\DeliveryOptionType;
 use PrestaShop\API\GraphQL\Type\Query\Sell\Checkout\PaymentOptionType;
 use PrestaShop\API\GraphQL\Types;
@@ -48,6 +49,8 @@ class CheckoutType extends ObjectType
                 'address_invoice' => Types::get(AddressType::class),
 
                 'message' => Types::string(),
+
+                'cart_rules' => new ListOfType(Types::get(CartRuleType::class)),
             ],
         ];
     }
@@ -152,5 +155,10 @@ class CheckoutType extends ObjectType
                 yield $paymentOption;
             }
         }
+    }
+
+    protected function getCartRules($objectValue, $args, ApiContext $context, ResolveInfo $info): array
+    {
+        return $context->shopContext->cart->getCartRules();
     }
 }

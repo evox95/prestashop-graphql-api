@@ -30,7 +30,6 @@ class CartType extends ObjectType
             'fields' => [
                 'products' => new ListOfType(Types::get(CartProductType::class)),
                 'summary' => Types::get(CartSummaryType::class),
-                'cart_rules' => new ListOfType(Types::get(CartRuleType::class)),
             ],
         ];
     }
@@ -52,10 +51,5 @@ class CartType extends ObjectType
     protected function getProducts($objectValue, $args, ApiContext $context, ResolveInfo $info): array
     {
         return $context->shopContext->cart->getProducts();
-    }
-
-    protected function getCartRules($objectValue, $args, ApiContext $context, ResolveInfo $info): array
-    {
-        return $context->shopContext->cart->getCartRules();
     }
 }

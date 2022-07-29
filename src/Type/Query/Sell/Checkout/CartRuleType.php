@@ -10,9 +10,11 @@
 
 declare(strict_types=1);
 
-namespace PrestaShop\API\GraphQL\Type\Query\Sell\Cart;
+namespace PrestaShop\API\GraphQL\Type\Query\Sell\Checkout;
 
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
 
 class CartRuleType extends ObjectType
@@ -70,7 +72,21 @@ class CartRuleType extends ObjectType
                     'type' => Type::boolean(),
                     'description' => 'Show in the cart',
                 ],
+
+                'value_real' => [
+                    'type' => Type::float(),
+                    'description' => '',
+                ],
+                'value_real_tax_exc' => [
+                    'type' => Type::float(),
+                    'description' => '',
+                ],
             ],
         ];
+    }
+
+    protected function getValueRealTaxExc($objectValue, $args, ApiContext $context, ResolveInfo $info): array
+    {
+        return $objectValue['value_tax_exc'];
     }
 }

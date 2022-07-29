@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace PrestaShop\API\GraphQL\Type\Mutation\Sell;
 
+use CartControllerCore;
 use Exception;
+use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;
 use OrderControllerCore;
 use PrestaShop\API\GraphQL\ApiContext;
@@ -49,6 +51,20 @@ class CheckoutMutation extends ObjectType
                     'description' => 'Create order',
                     'args' => [
                         'payment_option__action' => Types::string(),
+                    ],
+                ],
+                'add_cart_rule' => [
+                    'type' => Types::boolean(),
+                    'description' => 'Add discount code',
+                    'args' => [
+                        'code' => new NonNull(Types::string()),
+                    ],
+                ],
+                'delete_cart_rule' => [
+                    'type' => Types::boolean(),
+                    'description' => 'Delete cart rule',
+                    'args' => [
+                        'id_cart_rule' => new NonNull(Types::id()),
                     ],
                 ],
 //                'update_payment' => [
@@ -144,5 +160,29 @@ class CheckoutMutation extends ObjectType
         }
 
         return (bool)$result;
+    }
+
+    protected function actionAddCartRule($objectValue, $args, ApiContext $context, ResolveInfo $info): bool
+    {
+        $args['addDiscount'] = true;
+        $args['discount_name'] = $args['code'];
+        return $this->cartUpdate($args);
+    }
+
+    protected function actionDeleteCartRule($objectValue, $args, ApiContext $context, ResolveInfo $info): bool
+    {
+        $args['deleteDiscount'] = $args['id_cart_rule'];
+        return $this->cartUpdate($args);
+    }
+
+    private function cartUpdate(array $args): bool
+    {
+        $_GET = $args;
+        $_GET['ajax'] = true;
+        $cartCtrl = new CartControllerCore();
+        $cartCtrl->init();
+        $cartCtrl->postProcess();
+        return true;
+//        return $cartCtrl->errors;
     }
 }

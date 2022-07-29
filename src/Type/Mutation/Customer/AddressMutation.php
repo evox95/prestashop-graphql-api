@@ -59,10 +59,12 @@ class AddressMutation extends ObjectType
             $address = new Address();
         }
 
+        $optionalFields = ['address2', 'phone_mobile', 'company', 'vat_number'];
+
         foreach ($args as $key => $value) {
             $value = trim($value);
-            if (!in_array($key, ['address2', 'phone_mobile', 'company', 'vat_number']) && !$value) {
-                return false;
+            if (!in_array($key, $optionalFields) && !$value) {
+                continue;
             }
             $address->{$key} = $value;
         }
