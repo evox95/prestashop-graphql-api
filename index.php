@@ -11,12 +11,8 @@
 declare(strict_types=1);
 
 if (isset($_SERVER['HTTP_HOST'])) {
-    if ($_SERVER['HTTP_HOST'] == 'panel.arif.pl'){
-        header('Access-Control-Allow-Origin: https://app.arif.pl');
-    } else {
-        header('Access-Control-Allow-Origin: http://localhost:3000');
-    }
-
+    $currentHostWithProtocol = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'];
+    header('Access-Control-Allow-Origin: ' . $currentHostWithProtocol);
     header('Access-Control-Allow-Credentials: true');
     header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
     header('Access-Control-Allow-Headers: Origin, X-Requested-With, content-type, Accept, Cookie');
@@ -63,8 +59,8 @@ if (Configuration::get('PS_TOKEN_ENABLE')) {
 //$fc->init();
 
 try {
-// See docs on schema options:
-// https://webonyx.github.io/graphql-php/type-system/schema/#configuration-options
+    // See docs on schema options:
+    // https://webonyx.github.io/graphql-php/type-system/schema/#configuration-options
     $schema = new Schema([
         'query' => Types::get(QueryType::class)(),
         'mutation' => Types::get(MutationType::class)(),
@@ -90,10 +86,6 @@ try {
         $apiContext->shopContext->language = new Language(Language::getIdByIso($input['req_lang_iso']));
         $apiContext->shopContext->cookie->id_lang = Language::getIdByIso($input['req_lang_iso']);
     }
-//    var_dump($_GET);
-//    die();
-
-//AuthService::authMiddleware($apiContext);
 
     $validationRules = GraphQL::getStandardValidationRules();
     if (!_PS_MODE_DEV_) {
@@ -117,8 +109,8 @@ try {
         )
         ->setValidationRules($validationRules);
 
-// See docs on server options:
-// https://webonyx.github.io/graphql-php/executing-queries/#server-configuration-options
+    // See docs on server options:
+    // https://webonyx.github.io/graphql-php/executing-queries/#server-configuration-options
     $server = new StandardServer($config);
 
     $server->handleRequest();

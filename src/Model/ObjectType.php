@@ -60,9 +60,6 @@ abstract class ObjectType extends \GraphQL\Type\Definition\ObjectType
     {
         $fields = [];
         $types = ClassFinder::getClassesInNamespace($namespace);
-//        var_dump($namespace);
-//        var_dump($types);
-//        die();
         foreach ($types as $type) {
             $fieldName = strtolower(substr($type, (strrpos($type, '\\') + 1)));
             $fieldName = str_ireplace(['mutation', 'type'], '', $fieldName);
@@ -71,10 +68,6 @@ abstract class ObjectType extends \GraphQL\Type\Definition\ObjectType
                 'description' => $fieldName,
             ];
         }
-//        if (stripos($namespace, 'query') !== false) {
-//            var_dump($namespace, $fields);
-//            die();
-//        }
         return $fields;
     }
 
