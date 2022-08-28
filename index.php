@@ -10,30 +10,41 @@
 
 declare(strict_types=1);
 
-if (isset($_SERVER['HTTP_HOST'])) {
-    $currentHostWithProtocol = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'];
-    header('Access-Control-Allow-Origin: ' . $currentHostWithProtocol);
-    header('Access-Control-Allow-Credentials: true');
-    header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-    header('Access-Control-Allow-Headers: Origin, X-Requested-With, content-type, Accept, Cookie');
-    header('Access-Control-Max-Age: 3600');
-}
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Origin, X-Requested-With, content-type, Accept, Cookie');
+header('Access-Control-Max-Age: 3600');
+
+$requestHeaders = apache_request_headers();
 
 // chrome and some other browser sends a preflight check with OPTIONS
 // if that is found, then we need to send response that it's okay
 // @link https://stackoverflow.com/a/17125550/2754557
 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    if (isset($requestHeaders['Origin'])) {
+        header('Access-Control-Allow-Origin: ' . $requestHeaders['Origin']);
+    }
     // need preflight here
-//    header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Cookie');
+    header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Cookie');
     // add cache control for preflight cache
     // @link https://httptoolkit.tech/blog/cache-your-cors/
     header('Access-Control-Max-Age: 86400');
     header('Cache-Control: public, max-age=86400');
-//    header('Vary: origin');
+    header('Vary: origin');
     exit;
 }
 
 require_once __DIR__ . '/../../config/config.inc.php';
+
+if (
+    defined('API_GRAPHQL_ALLOWED_HOSTS')
+    && is_array(API_GRAPHQL_ALLOWED_HOSTS)
+    && isset($requestHeaders['Origin'])
+    && in_array($requestHeaders['Origin'], API_GRAPHQL_ALLOWED_HOSTS)
+) {
+    header('Access-Control-Allow-Origin: ' . $requestHeaders['Origin']);
+}
+
 require_once __DIR__ . '/../../init.php';
 require_once __DIR__ . '/vendor/autoload.php';
 
