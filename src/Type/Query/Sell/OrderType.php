@@ -62,6 +62,11 @@ class OrderType extends ObjectType
                 'gift' => Types::boolean(),
                 'gift_message' => Types::string(),
                 'note' => Types::string(),
+
+                'has_been_paid' => Types::boolean(),
+                'is_in_preparation' => Types::boolean(),
+                'has_been_shipped' => Types::boolean(),
+                'has_been_delivered' => Types::boolean(),
             ],
         ];
     }
@@ -88,5 +93,25 @@ class OrderType extends ObjectType
             }
             yield $product;
         }
+    }
+
+    protected function isPaid(Order $objectValue, $args, ApiContext $context, ResolveInfo $info): bool
+    {
+        return (bool)$objectValue->hasBeenPaid();
+    }
+
+    protected function isInPreparation(Order $objectValue, $args, ApiContext $context, ResolveInfo $info): bool
+    {
+        return (bool)$objectValue->isInPreparation();
+    }
+
+    protected function isShipped(Order $objectValue, $args, ApiContext $context, ResolveInfo $info): bool
+    {
+        return (bool)$objectValue->hasBeenShipped();
+    }
+
+    protected function isDelivered(Order $objectValue, $args, ApiContext $context, ResolveInfo $info): bool
+    {
+        return (bool)$objectValue->hasBeenDelivered();
     }
 }
