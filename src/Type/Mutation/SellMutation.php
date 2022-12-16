@@ -17,12 +17,12 @@ use PrestaShop\API\GraphQL\Type\Mutation\Sell\CartMutation;
 use PrestaShop\API\GraphQL\Type\Mutation\Sell\CheckoutMutation;
 use PrestaShop\API\GraphQL\Types;
 
-class SellType extends ObjectType
+class SellMutation extends ObjectType
 {
     protected static function getSchema(): array
     {
         return [
-            'name' => 'Sell',
+            'name' => 'SellMutation',
             'fields' => [
                 'cart' => [
                     'type' => Types::get(CartMutation::class),

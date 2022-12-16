@@ -19,7 +19,6 @@ use GraphQL\Type\Definition\Type;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
 use PrestaShop\API\GraphQL\Types;
-use PrestaShop\PrestaShop\Adapter\Entity\Image;
 use Product;
 
 class ProductType extends ObjectType
@@ -202,6 +201,18 @@ class ProductType extends ObjectType
                     'type' => new ListOfType(Types::get(ProductImageType::class)),
                     'description' => '',
                 ],
+                'features' => [
+                    'type' => new ListOfType(Types::get(ProductFeatureType::class)),
+                    'description' => '',
+                ],
+                'customizations' => [
+                    'type' => new ListOfType(Types::get(ProductCustomizationType::class)),
+                    'description' => '',
+                ],
+                'combinations' => [
+                    'type' => new ListOfType(Types::get(ProductCombinationType::class)),
+                    'description' => '',
+                ],
             ],
         ];
     }
@@ -217,23 +228,26 @@ class ProductType extends ObjectType
 
     protected function getPriceWithoutReduction(
         Product $rootValue, array $args, ApiContext $context, ResolveInfo $info
-    ): float {
-        return (float) $rootValue->getPriceWithoutReduct(
+    ): float
+    {
+        return (float)$rootValue->getPriceWithoutReduct(
             false, $args['id_product_attribute'] ?? 0
         );
     }
 
     protected function getPrice(
         Product $rootValue, array $args, ApiContext $context, ResolveInfo $info
-    ): float {
-        return (float) $rootValue->getPrice(
+    ): float
+    {
+        return (float)$rootValue->getPrice(
             true, $args['id_product_attribute'] ?? 0
         );
     }
 
     protected function getImages(
         Product $rootValue, array $args, ApiContext $context, ResolveInfo $info
-    ): Generator {
+    ): Generator
+    {
         $images = $rootValue->getImages(
             $context->shopContext->language->id, $context->shopContext
         );
@@ -242,5 +256,70 @@ class ProductType extends ObjectType
             unset($image['id_image']);
             yield $image;
         }
+    }
+
+    protected function getFeatures(
+        Product $rootValue, array $args, ApiContext $context, ResolveInfo $info
+    ): Generator
+    {
+        $features = $rootValue->getFrontFeatures($context->shopContext->language->id);
+        foreach ($features as $feature) {
+            $feature['id'] = $feature['id_feature'];
+            unset($feature['id_feature']);
+            yield $feature;
+        }
+    }
+
+    protected function getCustomizations(
+        Product $rootValue, array $args, ApiContext $context, ResolveInfo $info
+    ): Generator
+    {
+        $fields = $rootValue->getCustomizationFields($context->shopContext->language->id);
+        foreach ($fields as $field) {
+            $field['id'] = $field['id_customization_field'];
+            unset($field['id_customization_field']);
+            yield $field;
+        }
+    }
+
+    protected function getCombinations(
+        Product $rootValue, array $args, ApiContext $context, ResolveInfo $info
+    ): array
+    {
+        $combinations = $rootValue->getAttributeCombinations($context->shopContext->language->id);
+        $result = [];
+        foreach ($combinations as $combination) {
+            if (
+                (int)$combination['quantity'] <= 0
+                || (int)$combination['quantity'] < (int)$combination['minimal_quantity']
+            ) {
+                continue;
+            }
+
+            if (!isset($result[$combination['id_product_attribute']])) {
+                $result[$combination['id_product_attribute']] = [
+                    'id' => $combination['id_product_attribute'],
+                    'reference' => $combination['reference'],
+                    'ean13' => $combination['ean13'],
+                    'isbn' => $combination['isbn'],
+                    'upc' => $combination['upc'],
+                    'mpn' => $combination['mpn'],
+                    'price' => $combination['price'],
+                    'weight' => $combination['weight'],
+                    'default_on' => $combination['default_on'],
+                    'minimal_quantity' => $combination['minimal_quantity'],
+                    'attributes' => [],
+                ];
+            }
+
+            $result[$combination['id_product_attribute']]['attributes'][] = [
+                'id' => $combination['id_attribute'],
+                'id_attribute_group' => $combination['id_attribute_group'],
+                'name' => $combination['group_name'],
+                'value' => $combination['attribute_name'],
+            ];
+        }
+
+        return $result;
     }
 }

@@ -24,7 +24,7 @@ use PrestaShop\API\GraphQL\Model\ObjectType;
 use PrestaShop\API\GraphQL\Type\Query\CustomerType;
 use PrestaShop\API\GraphQL\Types;
 
-class AuthType extends ObjectType
+class AuthMutation extends ObjectType
 {
     /**
      * @throws Exception
@@ -32,7 +32,7 @@ class AuthType extends ObjectType
     protected static function getSchema(): array
     {
         return [
-            'name' => 'Auth',
+            'name' => 'AuthMutation',
             'fields' => [
                 'login' => [
                     'type' => Types::get(CustomerType::class),

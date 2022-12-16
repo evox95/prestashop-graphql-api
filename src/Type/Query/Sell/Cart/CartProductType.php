@@ -12,10 +12,16 @@ declare(strict_types=1);
 
 namespace PrestaShop\API\GraphQL\Type\Query\Sell\Cart;
 
+use Generator;
+use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
+use PrestaShop\API\GraphQL\Types;
+use PrestaShop\PrestaShop\Adapter\Entity\Combination;
+use PrestaShop\PrestaShop\Adapter\Entity\Db;
+use PrestaShop\PrestaShop\Adapter\Entity\Product;
 
 class CartProductType extends ObjectType
 {
@@ -29,6 +35,10 @@ class CartProductType extends ObjectType
                     'description' => '',
                 ],
                 'id_product_attribute' => [
+                    'type' => Type::id(),
+                    'description' => '',
+                ],
+                'id_customization' => [
                     'type' => Type::id(),
                     'description' => '',
                 ],
@@ -196,6 +206,10 @@ class CartProductType extends ObjectType
                     'type' => Type::string(),
                     'description' => '',
                 ],
+                'customization' => [
+                    'type' => new ListOfType(Types::get(CustomizationType::class)),
+                    'description' => '',
+                ],
             ],
         ];
     }
@@ -203,5 +217,31 @@ class CartProductType extends ObjectType
     protected function getCoverUrl(array $rootValue, array $args, ApiContext $context, ResolveInfo $info): string
     {
         return $context->shopContext->link->getImageLink('none', $rootValue['id_image']);
+    }
+
+    protected function getCustomization(
+        array $rootValue, array $args, ApiContext $context, ResolveInfo $info
+    ): Generator
+    {
+        $fields = Db::getInstance()->executeS(
+            'SELECT cd.id_customization, cfl.name, cd.value, cf.id_customization_field AS `index`
+			FROM `' . _DB_PREFIX_ . 'customization_field` cf
+			LEFT JOIN `' . _DB_PREFIX_ . 'customization_field_lang` cfl ON (
+			    cf.id_customization_field = cfl.id_customization_field
+			    AND cfl.id_lang = ' . (int) $context->shopContext->language->id . '
+			)
+			LEFT JOIN `' . _DB_PREFIX_ . 'customized_data` cd ON (cf.id_customization_field = cd.index)
+			WHERE 
+			    id_customization = ' . (int) $rootValue['id_customization'] . '
+			    AND cf.type = ' . (int) Product::CUSTOMIZE_TEXTFIELD
+        );
+        foreach ($fields as $field) {
+            yield [
+                'id' => $rootValue['id_customization'],
+                'name' => $field['name'],
+                'value' => $field['value'],
+                'index' => $field['index'],
+            ];
+        }
     }
 }
