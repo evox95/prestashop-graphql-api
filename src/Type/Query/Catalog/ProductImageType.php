@@ -16,6 +16,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
+use PrestaShop\PrestaShop\Adapter\Entity\Db;
 
 class ProductImageType extends ObjectType
 {
@@ -37,6 +38,10 @@ class ProductImageType extends ObjectType
                     'type' => Type::int(),
                     'description' => '',
                 ],
+                'product_attribute_id' => [
+                    'type' => Type::int(),
+                    'description' => '',
+                ],
             ],
         ];
     }
@@ -44,6 +49,15 @@ class ProductImageType extends ObjectType
     protected function getUrl($rootValue, array $args, ApiContext $context, ResolveInfo $info): string
     {
         return $context->shopContext->link->getImageLink('large_default', $rootValue['id']);
+    }
+
+    protected function getProductAttributeId($rootValue, array $args, ApiContext $context, ResolveInfo $info): int
+    {
+        return (int)Db::getInstance()->getValue('
+            SELECT `id_product_attribute`
+            FROM `' . _DB_PREFIX_ . 'product_attribute_image`
+            WHERE `id_image` = ' . (int)$rootValue['id']
+        );
     }
 
 }
