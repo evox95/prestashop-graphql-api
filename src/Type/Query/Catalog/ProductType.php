@@ -275,6 +275,9 @@ class ProductType extends ObjectType
     ): Generator
     {
         $fields = $rootValue->getCustomizationFields($context->shopContext->language->id);
+        if (!$fields) {
+            return;
+        }
         foreach ($fields as $field) {
             $field['id'] = $field['id_customization_field'];
             unset($field['id_customization_field']);
@@ -319,7 +322,6 @@ class ProductType extends ObjectType
                 'value' => $combination['attribute_name'],
             ];
         }
-
         return $result;
     }
 }
