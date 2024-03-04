@@ -223,6 +223,11 @@ class CartProductType extends ObjectType
         return $context->shopContext->link->getImageLink('none', $rootValue['id_image']);
     }
 
+    protected function getIsGift(array $rootValue, array $args, ApiContext $context, ResolveInfo $info): bool
+    {
+        return isset($rootValue['is_gift']) && $rootValue['is_gift'];
+    }
+
     protected function getCustomization(
         array $rootValue, array $args, ApiContext $context, ResolveInfo $info
     ): Generator
