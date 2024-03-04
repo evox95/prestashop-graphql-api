@@ -21,7 +21,7 @@ use PrestaShop\API\GraphQL\Model\ObjectType;
 use PrestaShop\API\GraphQL\Types;
 use PrestaShop\PrestaShop\Adapter\Entity\Combination;
 use PrestaShop\PrestaShop\Adapter\Entity\Db;
-use PrestaShop\PrestaShop\Adapter\Entity\Product;
+use Product;
 
 class CartProductType extends ObjectType
 {
@@ -153,6 +153,10 @@ class CartProductType extends ObjectType
                 'price_wt' => [
                     'type' => Type::float(),
                     'description' => 'Price with tax',
+                ],
+                'is_gift' => [
+                    'type' => Type::boolean(),
+                    'description' => 'Is gift?',
                 ],
                 'reduction' => [
                     'type' => Type::boolean(),

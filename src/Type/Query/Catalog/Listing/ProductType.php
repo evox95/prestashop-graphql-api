@@ -16,8 +16,5 @@ use PrestaShop\API\GraphQL\Type\Query\Catalog\ProductType as ProductTypeCore;
 
 class ProductType extends ProductTypeCore
 {
-    protected static function getSchema(): array
-    {
-        return parent::getSchema();
-    }
+
 }

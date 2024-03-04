@@ -144,5 +144,6 @@ try {
             $error->getMessage()
         ],
     ]);
+    exit;
 //    StandardServer::send500Error($error);
 }

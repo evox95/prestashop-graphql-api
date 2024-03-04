@@ -50,6 +50,6 @@ class CartType extends ObjectType
 
     protected function getProducts($objectValue, $args, ApiContext $context, ResolveInfo $info): array
     {
-        return $context->shopContext->cart->getProducts();
+        return $context->shopContext->cart->getProducts(true);
     }
 }

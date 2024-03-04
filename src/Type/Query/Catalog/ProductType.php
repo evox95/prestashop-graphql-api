@@ -219,11 +219,7 @@ class ProductType extends ObjectType
 
     protected function getCoverUrl(Product $rootValue, array $args, ApiContext $context, ResolveInfo $info): string
     {
-        $result = $rootValue->getCover($rootValue->id)['id_image'] ?? 0;
-        if (!$result) {
-            return '';
-        }
-        return $context->shopContext->link->getImageLink('none', $rootValue->getCoverWs());
+        return $context->shopContext->link->getImageLink('home_default', $rootValue->getCoverWs());
     }
 
     protected function getPriceWithoutReduction(
