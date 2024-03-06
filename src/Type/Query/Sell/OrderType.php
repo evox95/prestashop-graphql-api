@@ -19,6 +19,7 @@ use Order;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
 use PrestaShop\API\GraphQL\Type\Query\Common\AddressType;
+use PrestaShop\API\GraphQL\Type\Query\Sell\Order\CartRuleType;
 use PrestaShop\API\GraphQL\Type\Query\Sell\Order\OrderProductType;
 use PrestaShop\API\GraphQL\Types;
 use PrestaShop\PrestaShop\Adapter\Entity\Address;
@@ -31,6 +32,7 @@ class OrderType extends ObjectType
             'name' => 'Order',
             'fields' => [
                 'products' => new ListOfType(Types::get(OrderProductType::class)),
+                'cart_rules' => new ListOfType(Types::get(CartRuleType::class)),
                 'date_add' => Types::string(),
                 'reference' => Types::string(),
                 'payment' => Types::string(),
@@ -69,6 +71,11 @@ class OrderType extends ObjectType
                 'has_been_delivered' => Types::boolean(),
             ],
         ];
+    }
+
+    protected function getCartRules(Order $objectValue, $args, ApiContext $context, ResolveInfo $info): array
+    {
+        return $objectValue->getCartRules();
     }
 
     protected function getAddressDelivery(Order $objectValue, $args, ApiContext $context, ResolveInfo $info): Address
