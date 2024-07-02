@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace PrestaShop\API\GraphQL\Type\Query\Sell;
 
 use Cart;
+use Country;
 use Generator;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -109,7 +110,8 @@ class CheckoutType extends ObjectType
 
     protected function getDeliveryOptions(Cart $objectValue, $args, ApiContext $context, ResolveInfo $info): Generator
     {
-        $list = $context->shopContext->cart->getDeliveryOptionList();
+        $deliveryAddress = new Address($objectValue->id_address_delivery);
+        $list = $context->shopContext->cart->getDeliveryOptionList(new Country($deliveryAddress->id_country));
         foreach ($list[$objectValue->id_address_delivery] as $deliveryOptionStr => $data) {
             yield [
                 'delivery_option' => $deliveryOptionStr,
@@ -132,11 +134,12 @@ class CheckoutType extends ObjectType
             if (!$lastOrderCarrierId) {
                 return [];
             }
-            $option = $lastOrderCarrierId . ',';
+            $option = [$objectValue->id_address_delivery => $lastOrderCarrierId . ','];
         }
 
         $deliveryOptionStr = $option[$objectValue->id_address_delivery];
-        $list = $objectValue->getDeliveryOptionList();
+        $deliveryAddress = new Address($objectValue->id_address_delivery);
+        $list = $objectValue->getDeliveryOptionList(new Country($deliveryAddress->id_country));
         $carrier = $list[$objectValue->id_address_delivery][$deliveryOptionStr]['carrier_list'][(int)$deliveryOptionStr];
 
         return [

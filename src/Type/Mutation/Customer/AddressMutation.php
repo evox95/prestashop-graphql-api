@@ -41,6 +41,13 @@ class AddressMutation extends ObjectType
                         'city' => Types::string(),
                         'other' => Types::string(),
                         'phone_mobile' => Types::string(),
+                        'id_country' => Types::id(),
+                    ],
+                ],
+                'remove' => [
+                    'type' => Types::boolean(),
+                    'args' => [
+                        'id' => Types::id(),
                     ],
                 ],
             ],
@@ -59,7 +66,7 @@ class AddressMutation extends ObjectType
             $address = new Address();
         }
 
-        $optionalFields = ['address2', 'phone_mobile', 'company', 'vat_number'];
+        $optionalFields = ['phone_mobile', 'phone', 'company', 'vat_number'];
 
         foreach ($args as $key => $value) {
             $value = trim($value);
@@ -68,7 +75,24 @@ class AddressMutation extends ObjectType
             }
             $address->{$key} = $value;
         }
+
+        $address->id_customer = $context->shopContext->customer->id;
+
         return $address->save();
+    }
+
+    protected function actionRemove($objectValue, $args, ApiContext $context, ResolveInfo $info): bool
+    {
+        if (!isset($args['id'])) {
+            return false;
+        }
+
+        $address = new Address((int)$args['id']);
+        if (!Validate::isLoadedObject($address) || $address->id_customer != $context->shopContext->customer->id) {
+            return false;
+        }
+
+        return $address->delete();
     }
 
 }

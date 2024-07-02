@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace PrestaShop\API\GraphQL\Type\Query;
 
+use Country;
 use Exception;
 use Generator;
 use GraphQL\Type\Definition\ListOfType;
@@ -19,6 +20,7 @@ use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;
 use PrestaShop\API\GraphQL\ApiContext;
 use PrestaShop\API\GraphQL\Model\ObjectType;
+use PrestaShop\API\GraphQL\Type\Query\International\CountryType;
 use PrestaShop\API\GraphQL\Type\Query\International\LanguageType;
 use PrestaShop\API\GraphQL\Types;
 use PrestaShop\PrestaShop\Adapter\Entity\Db;
@@ -47,6 +49,22 @@ class InternationalType extends ObjectType
                 'languages' => [
                     'type' => new ListOfType(Types::get(LanguageType::class)),
                     'description' => 'Returns subset of languages',
+                    'args' => [
+                        'offset' => [
+                            'type' => Types::int(),
+                            'description' => 'Offset',
+                            'defaultValue' => 0,
+                        ],
+                        'limit' => [
+                            'type' => Types::int(),
+                            'description' => 'Limit',
+                            'defaultValue' => 10,
+                        ],
+                    ],
+                ],
+                'countries' => [
+                    'type' => new ListOfType(Types::get(CountryType::class)),
+                    'description' => 'Returns subset of countries',
                     'args' => [
                         'offset' => [
                             'type' => Types::int(),
@@ -105,6 +123,35 @@ class InternationalType extends ObjectType
         $results = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($dbQuery);
         foreach ($results as $result) {
             yield new Language($result[Language::$definition['primary']]);
+        }
+    }
+
+    /**
+     * @param null $rootValue
+     * @param array{limit: int, offset: int} $args
+     * @param ApiContext $context
+     * @param ResolveInfo $info
+     *
+     * @return Generator<Country>
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function getCountries($rootValue, array $args, ApiContext $context, ResolveInfo $info): Generator
+    {
+        $dbQuery = new DbQuery();
+        $dbQuery->select('a.id_country');
+        $dbQuery->from(Country::$definition['table'], 'a');
+        $dbQuery->where('a.active = 1');
+
+        $dbQuery->limit($args['limit'], $args['offset']);
+
+        $results = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($dbQuery);
+        foreach ($results as $result) {
+            yield new Country(
+                $result[Country::$definition['primary']],
+                $context->shopContext->language->id
+            );
         }
     }
 }
